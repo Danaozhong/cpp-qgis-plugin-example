@@ -36,7 +36,27 @@ I also did a checkout of the QGIS repository to be able to have all the include 
 
 If you want to use MSVC, make you you have Visual Studio installed. I am using Visual Studio 2022.
 
-Adapt the paths to MSVC and OSGeo4W in `OSGeo4W_dev.bat`. Also, adapt the paths in `qgis_hello_world.pro`.
+#### Building using CMake
+
+For the CMake configuration to work, CMake must be able to find the path to the following libraries:
+- `OSGeo4W`: set the environment variable `OSGEO4W_ROOT` to your OSGEO4W installation directory.
+- `Qt5`: set the `Qt5_DIR` environment variable to the Qt5 installation directory. If you are using Qt5 delivered with OSGEO4W, you can simply use
+```shell
+export Qt5_DIR = <OSGEO4W_ROOT>/apps/Qt5
+```
+Run CMake using:
+```shell
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+Which should generate the build environment, and build the dynamic libraries that you can use in QGIS.
+
+#### Building using QMake
+
+
+Adapt the paths to MSVC and OSGeo4W in `OSGeo4W_dev.bat`. Also, please adapt the paths in `qgis_hello_world.pro`.
 Setup the environment by calling :
 ```bash
 env.bat
@@ -49,13 +69,20 @@ On Windows, the `Makefile` only works with the MSVC build toolchain, so you need
 ```bash
 nmake
 ```
-It should generate a `qgis_hello_world.dll`. Copy it into `<OSGeo4W_Dir>\apps\qgis\plugins`. After restarting QGIS, the plugin should show up:
+
+### Testing 
+
+The build process should generate a `helloworldplugin.dll`. Copy it into `<OSGeo4W_Dir>\apps\qgis\plugins`. After restarting QGIS, the plugin should show up:
 
 ![](res/installed-plugin.png)
 
-## TODOs
+After activating the plugin, the plugin should show up in the plugin menu bar:
 
-- Provide an example using `CMake`.
-- Add some actual functionality to the plugin.
-- Provide debugging hints.
+![](res/plugin-menu.png)
 
+
+## Pitfalls
+
+- When using Qt, it seems to be quite important to match debug/release configuration with the build type of your QGIS installation, i.e. use a release library for a release version of QGIS.
+- The QGIS API is constantly evolving. As such, the static libraries that are used to link the plugin may not work with every QGIS version. I noticed that libraries built with QGIS 3.34 don't work on QGIS 3.24. You'll need to build for many different QGIS versions, or use only a specific QGIS version. This is another reason why Python plugins are usually a better choice, as their API is more stable.
+- Logging on `stdout` doesn't seem to be active on release builds. Use `QgsMessageLog::logMessage` to make sure your logs show up in the log window.

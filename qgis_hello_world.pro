@@ -36,7 +36,6 @@ INCLUDEPATH += $$QGIS_DIR/src/core/sensor
 INCLUDEPATH += $$QGIS_DIR/src/core/vector
 INCLUDEPATH += $$QGIS_DIR/external/nlohmann
 
-SOURCES = qgis_hello_world.cpp
-HEADERS = qgis_hello_world.h
+SOURCES = src/qgis_hello_world.cpp
+HEADERS = src/qgis_hello_world.h
 DEST = qgis_hello_world.so
-DEFINES += GUI_EXPORT= CORE_EXPORT=
