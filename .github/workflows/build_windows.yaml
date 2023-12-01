@@ -6,15 +6,19 @@ on:
   pull_request:
     branches: [ "main" ]
 
+
+
 jobs:
   build-windows:
     runs-on: windows-latest
+    env:
+        OSGEO4W_ROOT: 'C:\OSGeo4W'
 
     strategy:
       fail-fast: false
 
       matrix:
-        build_type: [Debug, Release]
+        build_type: [Release]
 
     steps:
     - uses: actions/checkout@v4
@@ -26,12 +30,14 @@ jobs:
         update: true
         install: mingw-w64-x86_64-toolchain
 
+    - run: mkdir $env:OSGEO4W_ROOT | out-null
+
     - name: Install OSGeo4W
       run: |
         $exe = 'osgeo4w-setup.exe'
         $url = 'http://download.osgeo.org/osgeo4w/v2/' + $exe
         (New-Object System.Net.WebClient).DownloadFile($url, $exe)
-        Start-Process ('.\'+$exe) -ArgumentList '-A -g -k -q -s http://download.osgeo.org/osgeo4w/v2/ -P qgis-dev-deps,qgis-devel' -Wait
+        Start-Process ('.\'+$exe) -ArgumentList '-A -g -k -q -s http://download.osgeo.org/osgeo4w/v2/ --P qgis-dev-deps,qgis-devel -R $env:OSGEO4W_ROOT' -Wait
 
     - name: Set reusable strings
       id: strings
