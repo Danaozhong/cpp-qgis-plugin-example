@@ -1,0 +1,48 @@
+name: Build the QGIS plugin (Windows)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        build_type: [Debug, Release]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: msys2/setup-msys2@v2
+      with:
+        path-type: inherit
+        location: D:\
+        update: true
+        install: mingw-w64-x86_64-toolchain
+
+    - name: Install OSGeo4W
+      run: |
+        $exe = 'osgeo4w-setup.exe'
+        $url = 'http://download.osgeo.org/osgeo4w/v2/' + $exe
+        (New-Object System.Net.WebClient).DownloadFile($url, $exe)
+        Start-Process ('.\'+$exe) -ArgumentList '-A -g -k -q -s http://download.osgeo.org/osgeo4w/v2/ -P qgis-dev-deps,qgis-devel' -Wait
+
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -S ${{ github.workspace }}
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
