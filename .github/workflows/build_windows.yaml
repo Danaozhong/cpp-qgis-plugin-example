@@ -37,7 +37,7 @@ jobs:
         $exe = 'osgeo4w-setup.exe'
         $url = 'http://download.osgeo.org/osgeo4w/v2/' + $exe
         (New-Object System.Net.WebClient).DownloadFile($url, $exe)
-        Start-Process ('.\'+$exe) -ArgumentList '-A -g -k -q -s http://download.osgeo.org/osgeo4w/v2/ --P qgis-dev-deps,qgis-devel -R $env:OSGEO4W_ROOT' -Wait
+        ./osgeo4w-setup.exe -A -g -k -q  -R $env:OSGEO4W_ROOT -s http://download.osgeo.org/osgeo4w/v2/ -P qgis,qgis-dev-deps,qgis-devel
 
     - name: Set reusable strings
       id: strings
