@@ -6,29 +6,15 @@ on:
   pull_request:
     branches: [ "main" ]
 
-
-
 jobs:
   build-windows:
     runs-on: windows-latest
     env:
-        OSGEO4W_ROOT: 'C:\OSGeo4W'
-
-    strategy:
-      fail-fast: false
-
-      matrix:
-        build_type: [Release]
+      OSGEO4W_ROOT: "D:/OSGeo4W"
+      Qt5_DIR: "D:/OSGeo4W/apps/Qt5"
 
     steps:
     - uses: actions/checkout@v4
-
-    - uses: msys2/setup-msys2@v2
-      with:
-        path-type: inherit
-        location: D:\
-        update: true
-        install: mingw-w64-x86_64-toolchain
 
     - run: mkdir $env:OSGEO4W_ROOT | out-null
 
@@ -37,7 +23,7 @@ jobs:
         $exe = 'osgeo4w-setup.exe'
         $url = 'http://download.osgeo.org/osgeo4w/v2/' + $exe
         (New-Object System.Net.WebClient).DownloadFile($url, $exe)
-        ./osgeo4w-setup.exe -A -g -k -q  -R $env:OSGEO4W_ROOT -s http://download.osgeo.org/osgeo4w/v2/ -P qgis,qgis-dev-deps,qgis-devel
+        Start-Process ('.\'+$exe) -ArgumentList '--advanced --autoaccept --quiet-mode --only-site -s http://download.osgeo.org/osgeo4w/v2/ -P qgis,qgis-deps,qgis-common,qgis-devel,qt5-devel,qt5-libs,qt5-tools,qt5-libs-symbols' -Wait -NoNewWindow
 
     - name: Set reusable strings
       id: strings
@@ -45,10 +31,20 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
+    - name: Add Directories to PATH
+      run: |
+        Add-Content $env:GITHUB_PATH $env:OSGEO4W_ROOT/bin
+        Add-Content $env:GITHUB_PATH $env:Qt5_DIR/bin
+
     - name: Configure CMake
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -S ${{ github.workspace }}
 
     - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: qgis-plugin-windows
+        path: ${{ steps.strings.outputs.build-output-dir }}/**/helloworldplugin.dll
