@@ -48,7 +48,18 @@ export OSGEO4W_ROOT = C:/OSGeo4W
 export Qt5_DIR = <OSGEO4W_ROOT>/apps/Qt5
 ```
 
-## Pre
+
+## Prerequistes (Ubuntu)
+
+On Ubuntu, you can simply install the `qgis_dev` package:
+```shell
+sudo apt install qgis-dev
+```
+Similar to Windows, you need to make sure that the package fits to the QGIS version you intend to use.
+
+## Using MinGW
+If you want to use MinGW, either from Linux to cross-compile for Windows, or on Windows, you will need to rebuild QGIS manually to build the `qgis_core.lib` and `qgis_gui.lib` files.
+
 ## Building using CMake
 
 Run CMake using:
