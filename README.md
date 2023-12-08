@@ -87,9 +87,15 @@ On Windows, the `Makefile` only works with the MSVC build toolchain, so you need
 nmake
 ```
 
-### Testing 
+## Testing 
 
-The build process should generate a `helloworldplugin.dll`. Copy it into `<OSGeo4W_Dir>\apps\qgis\plugins`. After restarting QGIS, the plugin should show up:
+The build process should generate a `helloworldplugin.dll` or `libhelloworldplugin.so`. Copy it into `<OSGeo4W_Dir>\apps\qgis\plugins`. 
+
+You can also download the [CI build artifacts](https://github.com/Danaozhong/cpp-simple-qgis-plugin/actions). Click on the link, open the latest run, and download the zip file from the GitHub Action:
+
+![](res/download.png)
+
+After restarting QGIS, the plugin should show up:
 
 ![](res/installed-plugin.png)
 
