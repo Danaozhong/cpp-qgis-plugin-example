@@ -29,7 +29,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt install qgis-dev
+        sudo apt -y update
+        sudo apt -y install qgis-dev
 
     # workaround for broken clang on ubuntu runner until https://github.com/actions/runner-images/issues/8659 get fixed
     - uses: mjp41/workaround8649@7929373c0fe5caf844d8115adccef39e3b5362e7
