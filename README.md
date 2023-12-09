@@ -19,31 +19,49 @@ Only use C++ plugins if you really have to. The QGIS API is changing, you will h
 
 QGIS plugins are easiest built using `qmake`. `qmake` is a build environment used for projects that use Qt.
 
-### Prerequisites
+## Prerequisites (Windows)
 
 Don't use a preinstalled QGIS. Install `OSGeo4W`, and use the installer to install QGIS and the developer dependencies as well. You will need to install the following components:
-- `qgis-dev-deps`
-- `qgis-devel`
 - `qgis`
-- `libtiff`, `libtiff-devel`
+- `qgis-deps`
+- `qgis-common`
+- `qgis-devel`
+
+If your plugin is using Qt, make sure to also install the following dependencies.
+- `qt5-devel`
+- `qt5-libs`
+- `qt5-tools`
+- `qt5-libs-symbols`
+
+You can look at the GitHub Action in this repository to see how to install the package automatically.
 
 These packages include the headers (for example `qgsconfig.h`), and the libraries (`qgis_core.lib`, `lqgis_gui.lib`) required to compile a plugin. If you install the same version of QGIS, you can be sure that the libraries and headers fit to the installed QGIS version.
-There is no need to build QGIS yourself.
+If you are using `OSGeo4W`, there is no need to build QGIS yourself.
 
-I also did a checkout of the QGIS repository to be able to have all the include headers (this may not be necessary).
-
-### Building on Windows
-
-If you want to use MSVC, make you you have Visual Studio installed. I am using Visual Studio 2022.
-
-#### Building using CMake
+Make you you have Visual Studio installed. The pre-built QGIS libraries in `OSgeo4W` were built with MSVC, so you need to use MSVC as well for compiling the plugin. I am using Visual Studio 2022.
 
 For the CMake configuration to work, CMake must be able to find the path to the following libraries:
 - `OSGeo4W`: set the environment variable `OSGEO4W_ROOT` to your OSGEO4W installation directory.
 - `Qt5`: set the `Qt5_DIR` environment variable to the Qt5 installation directory. If you are using Qt5 delivered with OSGEO4W, you can simply use
 ```shell
+export OSGEO4W_ROOT = C:/OSGeo4W
 export Qt5_DIR = <OSGEO4W_ROOT>/apps/Qt5
 ```
+
+
+## Prerequistes (Ubuntu)
+
+On Ubuntu, you can simply install the `qgis_dev` package:
+```shell
+sudo apt install qgis-dev
+```
+Similar to Windows, you need to make sure that the package fits to the QGIS version you intend to use.
+
+## Using MinGW
+If you want to use MinGW, either from Linux to cross-compile for Windows, or on Windows, you will need to rebuild QGIS manually to build the `qgis_core.lib` and `qgis_gui.lib` files.
+
+## Building using CMake
+
 Run CMake using:
 ```shell
 mkdir build
@@ -53,8 +71,7 @@ cmake --build .
 ```
 Which should generate the build environment, and build the dynamic libraries that you can use in QGIS.
 
-#### Building using QMake
-
+## Building using QMake
 
 Adapt the paths to MSVC and OSGeo4W in `OSGeo4W_dev.bat`. Also, please adapt the paths in `qgis_hello_world.pro`.
 Setup the environment by calling :
@@ -70,9 +87,15 @@ On Windows, the `Makefile` only works with the MSVC build toolchain, so you need
 nmake
 ```
 
-### Testing 
+## Testing 
 
-The build process should generate a `helloworldplugin.dll`. Copy it into `<OSGeo4W_Dir>\apps\qgis\plugins`. After restarting QGIS, the plugin should show up:
+The build process should generate a `helloworldplugin.dll` or `libhelloworldplugin.so`. Copy it into `<OSGeo4W_Dir>\apps\qgis\plugins`. 
+
+You can also download the [CI build artifacts](https://github.com/Danaozhong/cpp-simple-qgis-plugin/actions). Click on the link, open the latest run, and download the zip file from the GitHub Action:
+
+![](res/download.png)
+
+After restarting QGIS, the plugin should show up:
 
 ![](res/installed-plugin.png)
 
