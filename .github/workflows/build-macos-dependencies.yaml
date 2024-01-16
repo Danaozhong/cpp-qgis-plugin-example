@@ -1,0 +1,63 @@
+name: Build the Plugin Dependencies (macOS)
+
+on:
+  workflow_dispatch:
+    inputs:
+      qgis-version:
+        description: "The QGIS version to build the dependencies."
+        default: 3_34_2
+
+env:
+  QT_VERSION: 5.15.2
+  QGIS_DEPS_VERSION: 0.9
+  QGIS_DEPS_PATCH_VERSION: 0
+  CCACHE_DIR: /Users/runner/work/ccache
+  BUILD_DIR: /Users/runner/work/QGIS/build-QGIS
+  # apparently we cannot cache /opt directory as it fails to restore
+  # so we copy the deps in the home directory
+  DEPS_CACHE_DIR: /Users/runner/work/deps-cache
+
+jobs:
+  build-macos-dependencies:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        repository: https://github.com/qgis/QGIS.git
+        ref: final-${{ inputs.qgis-version }}
+
+    - name: Download Qt
+      run: |
+        wget https://qgis.org/downloads/macos/deps/qt-${QT_VERSION}.tar.gz
+ 
+    - name: Download qgis-deps
+      run: |
+        wget https://qgis.org/downloads/macos/deps/qgis-deps-${QGIS_DEPS_VERSION}.${QGIS_DEPS_PATCH_VERSION}.tar.gz
+
+    - name: Install Qt and deps
+      run: |
+        wget https://qgis.org/downloads/macos/deps/install_qgis_deps-${QGIS_DEPS_VERSION}.${QGIS_DEPS_PATCH_VERSION}.bash
+        chmod +x ./install_qgis_deps-${QGIS_DEPS_VERSION}.${QGIS_DEPS_PATCH_VERSION}.bash
+        echo ::group::Install deps
+        sudo ./install_qgis_deps-${QGIS_DEPS_VERSION}.${QGIS_DEPS_PATCH_VERSION}.bash
+      
+    - name: Run cmake
+      run: |
+        mkdir -p ${BUILD_DIR}
+        cd ${BUILD_DIR}
+
+        PATH=/opt/QGIS/qgis-deps-${QGIS_DEPS_VERSION}/stage/bin:$PATH \
+        cmake -DQGIS_MAC_DEPS_DIR=/opt/QGIS/qgis-deps-${QGIS_DEPS_VERSION}/stage \
+              -DCMAKE_PREFIX_PATH=/opt/Qt/${QT_VERSION}/clang_64 \
+              -DWITH_BINDINGS=TRUE \
+              -DWITH_3D=TRUE \
+              -DWITH_DRACO=FALSE \
+              -DWITH_PDAL=TRUE \
+              -DWITH_EPT=TRUE \
+              ../QGIS
+
+    - name: Build QGIS
+      run: |
+        cd ${BUILD_DIR}
+        make -j $(sysctl -n hw.ncpu)
