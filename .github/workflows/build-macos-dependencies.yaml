@@ -6,6 +6,10 @@ on:
       qgis-version:
         description: "The QGIS version to build the dependencies."
         default: '3_34_2'
+      build-timestamp:
+        description: "The QGIS build timestamp."
+        default: '20231222_122631'
+        
 
 env:
   QT_VERSION: 5.15.2
@@ -21,7 +25,9 @@ jobs:
     - name: Download the Official QGIS Release
       # use a wildcard for the build date, as the build date is not known
       run: |
-        wget -O qgis_installer.dmg -r --no-parent -A 'qgis_pr_final-${{ inputs.qgis-version }}_*.dmg' https://download.qgis.org/downloads/macos/pr/
+        wget -O qgis_installer.dmg https://download.qgis.org/downloads/macos/pr/qgis_pr_final-${{ inputs.qgis-version }}_${{ inputs.build-timestamp }}.dmg
+
+      # wget -O qgis_installer.dmg -r --no-parent -A 'qgis_pr_final-${{ inputs.qgis-version }}_*.dmg' https://download.qgis.org/downloads/macos/pr/
 
     - name: Install Official QGIS
       run: |
