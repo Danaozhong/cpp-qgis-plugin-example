@@ -113,8 +113,20 @@ jobs:
       run: |
         cd ${BUILD_DIR}
         ls -la
+        cd output/lib/qgis_core.framework/
+        ls -la 
+        cd Headers
+        ls -la
+        cd ..
+        cd ../../../..
+        
+        cp -R ${BUILD_DIR}/output/lib/qgis_3d.framework/Headers ${OUT_DIR}/qgis_3d.framework/
+        cp -R ${BUILD_DIR}/output/lib/qgis_analysis.framework/Headers ${OUT_DIR}/qgis_analysis.framework/
+        cp -R ${BUILD_DIR}/output/lib/qgis_core.framework/Headers ${OUT_DIR}/qgis_core.framework/
+        cp -R ${BUILD_DIR}/output/lib/qgis_gui.framework/Headers ${OUT_DIR}/qgis_gui.framework/
+        cp -R ${BUILD_DIR}/output/lib/qgis_native.framework/Headers ${OUT_DIR}/qgis_native.framework/
 
     - uses: actions/upload-artifact@v3
       with:
         name: qgis-macos-libraries-${{ inputs.qgis-version }}_${{ inputs.build-timestamp }}
-        path: ${{ github.workspace }}/${OUT_DIR}/*
+        path: macos-final-libraries/*
