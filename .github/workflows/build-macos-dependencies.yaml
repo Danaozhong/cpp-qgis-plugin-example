@@ -29,6 +29,7 @@ env:
   QGIS_DEPS_VERSION: 0.9
   QGIS_DEPS_PATCH_VERSION: 0
   BUILD_DIR: build-QGIS
+  OUT_DIR: macos-final-libraries
 
 jobs:
   build-macos-dependencies:
@@ -42,18 +43,31 @@ jobs:
 
       # wget -O qgis_installer.dmg -r --no-parent -A 'qgis_pr_final-${{ inputs.qgis-version }}_*.dmg' https://download.qgis.org/downloads/macos/pr/
 
-    - name: Install Official QGIS
+    - name: Mount Official QGIS
       # To bypass EULA, we convert to cdr format.
       run: |
         hdiutil convert qgis_installer.dmg -format UDTO -o qgis_installer.cdr
         hdiutil attach -quiet -nobrowse -noverify -noautoopen qgis_installer.cdr
         echo QGIS installer image mounted.
+        cd /Volumes/QGIS.app/QGIS.app/
         ls -la
-        cd /Volumes/QGIS.app/
+        cd Contents/Frameworks
         ls -la
-        echo Install QGIS package
-        sudo installer -pkg QGIS.pkg -target "/"
-        hdiutil detach /Volumes/QGIS/
+        
+    - name: Copy pre-built libraries
+      run: |
+        mkdir -p ${OUT_DIR}
+        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_3d.framework ${OUT_DIR}
+        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_analysis.framework ${OUT_DIR}
+        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_core.framework ${OUT_DIR}        
+        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_gui.framework ${OUT_DIR}
+        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_native.framework ${OUT_DIR}
+        cd ${OUT_DIR}
+        ls -la
+
+    - name: Unmount official QGIS
+      run: |
+        hdiutil detach /Volumes/QGIS.app/
 
     - uses: actions/checkout@v4
       with:
@@ -94,3 +108,13 @@ jobs:
       run: |
         cd ${BUILD_DIR}
         make -j $(sysctl -n hw.ncpu)
+    
+    - name: Copy the built headers to the already existing libraries
+      run: |
+        cd ${BUILD_DIR}
+        ls -la
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: qgis-macos-libraries-${{ inputs.qgis-version }}_${{ inputs.build-timestamp }}
+        path: ${{ github.workspace }}/${OUT_DIR}/*
