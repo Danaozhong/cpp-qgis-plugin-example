@@ -18,6 +18,18 @@ jobs:
     runs-on: macos-latest
 
     steps:
+    - name: Download the Official QGIS Release
+      # use a wildcard for the build date, as the build date is not known
+      run: |
+        wget -O qgis_installer.dmg -r --no-parent -A 'qgis_pr_final-${{ inputs.qgis-version }}_*.dmg' https://download.qgis.org/downloads/macos/pr/
+
+    - name: Install Official QGIS
+      run: |
+        hdiutil attach qgis_installer.dmg
+        cd /Volumes/QGIS/
+        sudo installer -pkg QGIS.pkg -target "/"
+        hdiutil detach /Volumes/QGIS/
+
     - uses: actions/checkout@v4
       with:
         repository: qgis/QGIS
