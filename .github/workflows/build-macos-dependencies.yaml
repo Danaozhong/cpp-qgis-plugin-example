@@ -1,5 +1,18 @@
 name: Build the Plugin Dependencies (macOS)
-
+# This action is used to generate the plugin dependencies
+# for macOS targets. A C++ plugin for QGIS needs to link the
+# static QGIS libraries (e.g. qgis_core). Pre-built libraries
+# are available in the QGIS installations, but they do not come
+# with the accompanying header files. If you try to rebuild the
+# libraries from scratch (e.g. by checking out the right commit
+# and building QGIS), the C++ plugin will compile, but you won't
+# be able to use it, due to the one-definition rule. QGIS
+# will crash when trying to run with a C++ plugin on macOS.
+# This GitHub action solves this issue by:
+# 1) rebuilding the right QGIS version to get the header files.
+# 2) downloading the QGIS installation binary to get the library
+#    files.
+# 3) uploading the header + libraries as artifacts.
 on:
   workflow_dispatch:
     inputs:
@@ -30,11 +43,13 @@ jobs:
       # wget -O qgis_installer.dmg -r --no-parent -A 'qgis_pr_final-${{ inputs.qgis-version }}_*.dmg' https://download.qgis.org/downloads/macos/pr/
 
     - name: Install Official QGIS
+      # To bypass EULA, we convert to cdr format.
       run: |
-        hdiutil attach qgis_installer.dmg
+        hdiutil convert qgis_installer.dmg -format UDTO -o qgis_installer.cdr
+        hdiutil attach -quiet -nobrowse -noverify -noautoopen qgis_installer.cdr
         echo QGIS installer image mounted.
         ls -la
-        cd /Volumes/QGIS/
+        cd /Volumes/QGIS.app/
         ls -la
         echo Install QGIS package
         sudo installer -pkg QGIS.pkg -target "/"
