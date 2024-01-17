@@ -32,7 +32,11 @@ jobs:
     - name: Install Official QGIS
       run: |
         hdiutil attach qgis_installer.dmg
+        echo QGIS installer image mounted.
+        ls -la
         cd /Volumes/QGIS/
+        ls -la
+        echo Install QGIS package
         sudo installer -pkg QGIS.pkg -target "/"
         hdiutil detach /Volumes/QGIS/
 
