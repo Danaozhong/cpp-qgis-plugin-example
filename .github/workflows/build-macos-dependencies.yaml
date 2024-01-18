@@ -19,6 +19,9 @@ on:
       qgis-version:
         description: "The QGIS version to build the dependencies."
         default: '3_34_2'
+      lib-version:
+        description: "The QGIS version as a different string."
+        default: '3.34'
       build-timestamp:
         description: "The QGIS build timestamp."
         default: '20231222_122631'
@@ -30,12 +33,19 @@ env:
   QGIS_DEPS_PATCH_VERSION: 0
   BUILD_DIR: build-QGIS
   OUT_DIR: macos-final-libraries
+  LIB_PATH: output/lib
+  SRC_PATH: src
 
 jobs:
   build-macos-dependencies:
     runs-on: macos-latest
 
     steps:
+    - uses: actions/checkout@v4
+      with:
+        repository: qgis/QGIS
+        ref: final-${{ inputs.qgis-version }}
+
     - name: Download the Official QGIS Release
       # use a wildcard for the build date, as the build date is not known
       run: |
@@ -52,23 +62,18 @@ jobs:
         
     - name: Copy pre-built libraries
       run: |
-        mkdir -p ${{ env.OUT_DIR }}
-        cp -v -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_3d.framework ${{ env.OUT_DIR }}
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_analysis.framework ${{ env.OUT_DIR }}
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_core.framework ${{ env.OUT_DIR }}
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_gui.framework ${{ env.OUT_DIR }}
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_native.framework ${{ env.OUT_DIR }}
-        cd ${{ env.OUT_DIR }}
+        mkdir -p ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
+        cp -v -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_3d.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
+        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_analysis.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
+        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_core.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
+        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_gui.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
+        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_native.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
+        cd ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
         ls -la
 
     - name: Unmount official QGIS
       run: |
         hdiutil detach /Volumes/QGIS.app/
-
-    - uses: actions/checkout@v4
-      with:
-        repository: qgis/QGIS
-        ref: final-${{ inputs.qgis-version }}
 
     - name: Download Qt
       run: |
@@ -87,8 +92,8 @@ jobs:
       
     - name: Run cmake
       run: |
-        mkdir -p ${BUILD_DIR}
-        cd ${BUILD_DIR}
+        mkdir -p ${{ env.BUILD_DIR }}
+        cd ${{ env.BUILD_DIR }}
 
         PATH=/opt/QGIS/qgis-deps-${QGIS_DEPS_VERSION}/stage/bin:$PATH \
         cmake -DQGIS_MAC_DEPS_DIR=/opt/QGIS/qgis-deps-${QGIS_DEPS_VERSION}/stage \
@@ -102,16 +107,24 @@ jobs:
 
     - name: Build QGIS
       run: |
-        cd ${BUILD_DIR}
+        cd ${{ env.BUILD_DIR }}
         make -j $(sysctl -n hw.ncpu)
-            
+        
     - name: Copy the built headers to the already existing libraries
       run: |
-        cp -v -R ${BUILD_DIR}/output/lib/qgis_3d.framework/Headers ${{ env.OUT_DIR }}/qgis_3d.framework
-        cp -v -R ${BUILD_DIR}/output/lib/qgis_analysis.framework/Headers ${{ env.OUT_DIR }}/qgis_analysis.framework
-        cp -v -R ${BUILD_DIR}/output/lib/qgis_core.framework/Headers ${{ env.OUT_DIR }}/qgis_core.framework
-        cp -v -R ${BUILD_DIR}/output/lib/qgis_gui.framework/Headers ${{ env.OUT_DIR }}/qgis_gui.framework
-        cp -v -R ${BUILD_DIR}/output/lib/qgis_native.framework/Headers ${{ env.OUT_DIR }}/qgis_native.framework
+        cp -v -R ${{ env.BUILD_DIR }}/output/lib/qgis_3d.framework/Versions/${{ inputs.lib-version }}/Headers ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}/qgis_3d.framework/Versions/${{ inputs.lib-version }}
+        cp -v -R ${{ env.BUILD_DIR }}/output/lib/qgis_analysis.framework/Versions/${{ inputs.lib-version }}/Headers ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}/qgis_analysis.framework/Versions/${{ inputs.lib-version }}
+        cp -v -R ${{ env.BUILD_DIR }}/output/lib/qgis_core.framework/Versions/${{ inputs.lib-version }}/Headers ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}/qgis_core.framework/Versions/${{ inputs.lib-version }}
+        cp -v -R ${{ env.BUILD_DIR }}/output/lib/qgis_gui.framework/Versions/${{ inputs.lib-version }}/Headers ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}/qgis_gui.framework/Versions/${{ inputs.lib-version }}
+        cp -v -R ${{ env.BUILD_DIR }}/output/lib/qgis_native.framework/Versions/${{ inputs.lib-version }}/Headers ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}/qgis_native.framework/Versions/${{ inputs.lib-version }}
+
+    - name: Copy the generated header files in *.src to the library directory
+      run: |
+        mkdir -p ${{ env.OUT_DIR }}/${{ env.SRC_PATH }}
+        cp -v -R ${{ env.BUILD_DIR }}/src/*.h ${{ env.OUT_DIR }}/${{ env.SRC_PATH }}
+        
+        cd ${{ env.OUT_DIR }}/${{ env.SRC_PATH }}
+        ls -la
 
     - uses: actions/upload-artifact@v4
       with:
