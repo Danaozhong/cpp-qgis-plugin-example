@@ -49,26 +49,16 @@ jobs:
         hdiutil convert qgis_installer.dmg -format UDTO -o qgis_installer.cdr
         hdiutil attach -quiet -nobrowse -noverify -noautoopen qgis_installer.cdr
         echo QGIS installer image mounted.
-        cd /Volumes/QGIS.app/QGIS.app/
-        ls -la
-        cd Contents/Frameworks
-        ls -la
         
     - name: Copy pre-built libraries
       run: |
-        mkdir -p ${OUT_DIR}
-        mkdir -p ${OUT_DIR}/qgis_3d.framework
-        mkdir -p ${OUT_DIR}/qgis_analysis.framework
-        mkdir -p ${OUT_DIR}/qgis_core.framework
-        mkdir -p ${OUT_DIR}/qgis_gui.framework
-        mkdir -p ${OUT_DIR}/qgis_native.framework
-        
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_3d.framework ${OUT_DIR}/qgis_3d.framework
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_analysis.framework ${OUT_DIR}/qgis_analysis.framework
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_core.framework ${OUT_DIR}/qgis_core.framework
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_gui.framework ${OUT_DIR}/qgis_gui.framework
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_native.framework ${OUT_DIR}/qgis_native.framework
-        cd ${OUT_DIR}
+        mkdir -p ${{ env.OUT_DIR }}
+        cp -v -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_3d.framework ${{ env.OUT_DIR }}
+        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_analysis.framework ${{ env.OUT_DIR }}
+        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_core.framework ${{ env.OUT_DIR }}
+        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_gui.framework ${{ env.OUT_DIR }}
+        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_native.framework ${{ env.OUT_DIR }}
+        cd ${{ env.OUT_DIR }}
         ls -la
 
     - name: Unmount official QGIS
@@ -117,19 +107,13 @@ jobs:
             
     - name: Copy the built headers to the already existing libraries
       run: |
-        mkdir -p ${OUT_DIR}/qgis_3d.framework/Headers
-        mkdir -p ${OUT_DIR}/qgis_analysis.framework/Headers
-        mkdir -p ${OUT_DIR}/qgis_core.framework/Headers
-        mkdir -p ${OUT_DIR}/qgis_gui.framework/Headers
-        mkdir -p ${OUT_DIR}/qgis_native.framework/Headers
-        
-        cp -R ${BUILD_DIR}/output/lib/qgis_3d.framework/Headers ${OUT_DIR}/qgis_3d.framework/Headers
-        cp -R ${BUILD_DIR}/output/lib/qgis_analysis.framework/Headers ${OUT_DIR}/qgis_analysis.framework/Headers
-        cp -R ${BUILD_DIR}/output/lib/qgis_core.framework/Headers ${OUT_DIR}/qgis_core.framework/Headers
-        cp -R ${BUILD_DIR}/output/lib/qgis_gui.framework/Headers ${OUT_DIR}/qgis_gui.framework/Headers
-        cp -R ${BUILD_DIR}/output/lib/qgis_native.framework/Headers ${OUT_DIR}/qgis_native.framework/Headers
+        cp -v -R ${BUILD_DIR}/output/lib/qgis_3d.framework/Headers ${{ env.OUT_DIR }}/qgis_3d.framework
+        cp -v -R ${BUILD_DIR}/output/lib/qgis_analysis.framework/Headers ${{ env.OUT_DIR }}/qgis_analysis.framework
+        cp -v -R ${BUILD_DIR}/output/lib/qgis_core.framework/Headers ${{ env.OUT_DIR }}/qgis_core.framework
+        cp -v -R ${BUILD_DIR}/output/lib/qgis_gui.framework/Headers ${{ env.OUT_DIR }}/qgis_gui.framework
+        cp -v -R ${BUILD_DIR}/output/lib/qgis_native.framework/Headers ${{ env.OUT_DIR }}/qgis_native.framework
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: qgis-macos-libraries-${{ inputs.qgis-version }}_${{ inputs.build-timestamp }}
-        path: macos-final-libraries
+        path: ${{ env.OUT_DIR }}
