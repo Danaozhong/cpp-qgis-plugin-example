@@ -2,9 +2,20 @@
 
 A minimum sample of a C++ plugin for QGIS to help you get started.
 
+
+![build-macos](https://github.com/Danaozhong/cpp-simple-qgis-plugin/actions/workflows/build-macos.yaml/badge.svg)
+
 ![build-windows](https://github.com/Danaozhong/cpp-simple-qgis-plugin/actions/workflows/build-windows.yaml/badge.svg)
 
 ![build-linux](https://github.com/Danaozhong/cpp-simple-qgis-plugin/actions/workflows/build-linux.yaml/badge.svg)
+
+## Download pre-built Plugin
+
+The GitHub Action CI jobs build the plugin ready-to-use for all platforms (Windows, Apple and Linux).
+Download the library for your platform and QGIS version from the CI jobs below.
+[macOS](https://github.com/Danaozhong/cpp-simple-qgis-plugin/actions/workflows/build-macos.yaml)
+[Windows](https://github.com/Danaozhong/cpp-simple-qgis-plugin/actions/workflows/build-windows.yaml)
+[Linux](https://github.com/Danaozhong/cpp-simple-qgis-plugin/actions/workflows/build-linux.yaml)
 
 ## Background
 
@@ -53,9 +64,10 @@ export Qt5_DIR = <OSGEO4W_ROOT>/apps/Qt5
 ```
 ### macOS (ARM or x86)
 
-QGIS support for Mac is badly maintained. From the little research I have done, it seems that you will need to build QGIS and the dependencies from scratch.
+QGIS support for macOS is badly maintained. It took me a long time to get a working QGIS plugin without having to recompile QGIS.
+The key is to use the compiled static QGIS libraries from the official QGIS installation, and re-generate the header files, so that you can link the libraries. To make this step simpler, I wrote a small [CI job](https://github.com/Danaozhong/cpp-simple-qgis-plugin/actions/workflows/build-macos-dependencies.yaml) to make the generation of the build dependencies easier.
 
-If you have more experience with building on macOS, please feel welcomed to raise a PR!
+I stored the resulting QGIS static libraries directly in this repository, one folder per QGIS version. Reference the path to the QGIS libraries using the `QGIS_BUILD_PATH` environment variable.
 
 ### Linux (Ubuntu)
 
@@ -101,6 +113,12 @@ nmake
 
 ## Testing 
 
+### macOS
+Copy the generated `libhelloworld.so` to `/Applications/QGIS/Contents/PlugIns/qgis/`.
+
+If QGIS crashes during startup, you may have that the libraries used to build the plugin differ from the libraries used to build QGIS. Refer to above workarounds in the Prerequisites section.
+
+### Windows
 The build process should generate a `helloworldplugin.dll` or `libhelloworldplugin.so`. Copy it into `<OSGeo4W_Dir>\apps\qgis\plugins`. 
 
 You can also download the [CI build artifacts](https://github.com/Danaozhong/cpp-simple-qgis-plugin/actions). Click on the link, open the latest run, and download the zip file from the GitHub Action:
