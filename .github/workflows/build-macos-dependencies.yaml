@@ -122,11 +122,11 @@ jobs:
       run: |
         cd ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
         
-        ln -s qgis_3d.framework/Versions/${{ inputs.lib-version }}/Headers qgis_3d.framework
-        ln -s qgis_analysis.framework/Versions/${{ inputs.lib-version }}/Headers qgis_analysis.framework
-        ln -s qgis_core.framework/Versions/${{ inputs.lib-version }}/Headers qgis_core.framework
-        ln -s qgis_gui.framework/Versions/${{ inputs.lib-version }}/Headers qgis_gui.framework
-        ln -s qgis_native.framework/Versions/${{ inputs.lib-version }}/Headers qgis_native.framework
+        ln -s qgis_3d.framework/Versions/${{ inputs.lib-version }}/Headers qgis_3d.framework/Headers
+        ln -s qgis_analysis.framework/Versions/${{ inputs.lib-version }}/Headers qgis_analysis.framework/Headers
+        ln -s qgis_core.framework/Versions/${{ inputs.lib-version }}/Headers qgis_core.framework/Headers
+        ln -s qgis_gui.framework/Versions/${{ inputs.lib-version }}/Headers qgis_gui.framework/Headers
+        ln -s qgis_native.framework/Versions/${{ inputs.lib-version }}/Headers qgis_native.framework/Headers
         
     - name: Copy the generated header files in *.src to the library directory
       run: |
