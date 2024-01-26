@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        qgis_versions: [3_34_2]
+        qgis_version: [3_34_2]
 
     steps:
     - uses: actions/checkout@v4
@@ -31,27 +31,23 @@ jobs:
         chmod +x ./install_qgis_deps-0.9.0.bash
         sudo .//install_qgis_deps-0.9.0.bash
 
-    - name: Set reusable strings
-      id: strings
-      shell: bash
-      run: |
-        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
     - name: Configure CMake
-      run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DQGIS_BUILD_PATH=dependencies/qgis/macos_x86_64/${{ matrix.qgis_version }}
-        -DQt5_DIR=${Qt5_DIR}
-        -DCMAKE_PREFIX_PATH=${Qt5_DIR}/clang_64
-        -DCMAKE_BUILD_TYPE=Release
-        -S ${{ github.workspace }}
+      run: |
+        mkdir build
+        cd build
+        cmake \
+        -DQGIS_BUILD_PATH=dependencies/qgis/macos_x86_64/${{ matrix.qgis_version }} \
+        -DQt5_DIR=${{ env.Qt5_DIR }} \
+        -DCMAKE_PREFIX_PATH=${{ env.Qt5_DIR }}/clang_64 \
+        -DCMAKE_BUILD_TYPE=Release \
+        ..
 
     - name: Build
       run: |
-        cd ${{ steps.strings.outputs.build-output-dir }}
+        cd build
         make -j $(sysctl -n hw.ncpu)
 
     - uses: actions/upload-artifact@v3
       with:
-        name: qgis-plugin-macos
-        path: ${{ steps.strings.outputs.build-output-dir }}/**/helloworldplugin.dylib
+        name: qgis-plugin-macos-${{ matrix.qgis_version }}
+        path: build/**/helloworldplugin.so
