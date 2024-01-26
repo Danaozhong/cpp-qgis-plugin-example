@@ -1,0 +1,53 @@
+name: Build the QGIS plugin (macOS)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  QT_VERSION: 5.15.2
+  Qt5_DIR: /opt/Qt/5.15.2
+  DEPS_CACHE_DIR: /Users/runner/work/deps-cache
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        qgis_version: [3_34_2]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Qt and QGIS dependencies
+      run: |
+        wget https://qgis.org/downloads/macos/deps/qt-${{env.QT_VERSION}}.tar.gz
+        mkdir -p ${{env.DEPS_CACHE_DIR}}
+        mkdir -p ${{env.DEPS_CACHE_DIR}}/Qt
+        wget https://qgis.org/downloads/macos/deps/install_qgis_deps-0.9.0.bash
+        chmod +x ./install_qgis_deps-0.9.0.bash
+        sudo .//install_qgis_deps-0.9.0.bash
+
+    - name: Configure CMake
+      run: |
+        mkdir build
+        cd build
+        cmake \
+        -DQGIS_BUILD_PATH=dependencies/qgis/macos_x86_64/${{ matrix.qgis_version }} \
+        -DQt5_DIR=${{ env.Qt5_DIR }} \
+        -DCMAKE_PREFIX_PATH=${{ env.Qt5_DIR }}/clang_64 \
+        -DCMAKE_BUILD_TYPE=Release \
+        ..
+
+    - name: Build
+      run: |
+        cd build
+        make -j $(sysctl -n hw.ncpu)
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: qgis-plugin-macos-${{ matrix.qgis_version }}
+        path: build/**/libhelloworldplugin.so
