@@ -50,4 +50,4 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: qgis-plugin-macos-${{ matrix.qgis_version }}
-        path: build/**/helloworldplugin.so
+        path: build/**/libhelloworldplugin.so
