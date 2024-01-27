@@ -112,29 +112,16 @@ jobs:
 
     - name: Copy the built headers to the already existing libraries
       run: |
-        cp -v -R ${{ env.BUILD_DIR }}/output/lib/qgis_3d.framework/Versions/${{ inputs.lib-version }}/Headers ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}/qgis_3d.framework/Versions/${{ inputs.lib-version }}
-        cp -v -R ${{ env.BUILD_DIR }}/output/lib/qgis_analysis.framework/Versions/${{ inputs.lib-version }}/Headers ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}/qgis_analysis.framework/Versions/${{ inputs.lib-version }}
-        cp -v -R ${{ env.BUILD_DIR }}/output/lib/qgis_core.framework/Versions/${{ inputs.lib-version }}/Headers ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}/qgis_core.framework/Versions/${{ inputs.lib-version }}
-        cp -v -R ${{ env.BUILD_DIR }}/output/lib/qgis_gui.framework/Versions/${{ inputs.lib-version }}/Headers ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}/qgis_gui.framework/Versions/${{ inputs.lib-version }}
-        cp -v -R ${{ env.BUILD_DIR }}/output/lib/qgis_native.framework/Versions/${{ inputs.lib-version }}/Headers ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}/qgis_native.framework/Versions/${{ inputs.lib-version }}
+        cp -v -R ${{ env.BUILD_DIR }}/output/lib/qgis_3d.framework/Versions/${{ inputs.lib-version }}/Headers ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}/qgis_3d.framework
+        cp -v -R ${{ env.BUILD_DIR }}/output/lib/qgis_analysis.framework/Versions/${{ inputs.lib-version }}/Headers ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}/qgis_analysis.framework
+        cp -v -R ${{ env.BUILD_DIR }}/output/lib/qgis_core.framework/Versions/${{ inputs.lib-version }}/Headers ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}/qgis_core.framework
+        cp -v -R ${{ env.BUILD_DIR }}/output/lib/qgis_gui.framework/Versions/${{ inputs.lib-version }}/Headers ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}/qgis_gui.framework
+        cp -v -R ${{ env.BUILD_DIR }}/output/lib/qgis_native.framework/Versions/${{ inputs.lib-version }}/Headers ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}/qgis_native.framework
 
-    - name: Create symlinks
-      run: |
-        cd ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
-        
-        ln -s qgis_3d.framework/Versions/${{ inputs.lib-version }}/Headers qgis_3d.framework/Headers
-        ln -s qgis_analysis.framework/Versions/${{ inputs.lib-version }}/Headers qgis_analysis.framework/Headers
-        ln -s qgis_core.framework/Versions/${{ inputs.lib-version }}/Headers qgis_core.framework/Headers
-        ln -s qgis_gui.framework/Versions/${{ inputs.lib-version }}/Headers qgis_gui.framework/Headers
-        ln -s qgis_native.framework/Versions/${{ inputs.lib-version }}/Headers qgis_native.framework/Headers
-        
     - name: Copy the generated header files in *.src to the library directory
       run: |
         mkdir -p ${{ env.OUT_DIR }}/${{ env.SRC_PATH }}/ui
-        cp -v -R ${{ env.BUILD_DIR }}/src/ui/*.h ${{ env.OUT_DIR }}/${{ env.SRC_PATH }}/ui
-        
-        cd ${{ env.OUT_DIR }}/${{ env.SRC_PATH }}
-        ls -la
+        cp -v -R ${{ env.BUILD_DIR }}/src/ui/*.h ${{ env.OUT_DIR }}/${{ env.SRC_PATH }}/u
 
     - uses: actions/upload-artifact@v4
       with:
