@@ -43,10 +43,5 @@ include_directories(
   ${INCLUDES}
 )
 
-if (APPLE)
-  # On macOS, never build for ARM, always build x86_64 to be compatible with QGIS
-  set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE INTERNAL "" FORCE)
-endif ()
-
 # The compiled library code is here
 add_subdirectory(src)

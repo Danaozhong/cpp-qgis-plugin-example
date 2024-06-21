@@ -103,6 +103,7 @@ jobs:
               -DWITH_DRACO=FALSE \
               -DWITH_PDAL=TRUE \
               -DWITH_EPT=TRUE \
+              -DCMAKE_OSX_ARCHITECTURES=x86_64 \
               ..
 
     - name: Build QGIS
