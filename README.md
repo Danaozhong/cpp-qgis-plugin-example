@@ -126,6 +126,7 @@ cmake \
 -DQt5_DIR=/opt/Qt/5.15.2 \
 -DCMAKE_PREFIX_PATH=/opt/Qt/5.15.2/clang_64 \
 -DCMAKE_BUILD_TYPE=Release \
+-DCMAKE_OSX_ARCHITECTURES=x86_64 \
 ..
 ```
 
@@ -134,6 +135,7 @@ Let's break this down bit by bit.
 - `-DQGIS_BUILD_PATH=dependencies/qgis/macos_x86_64/3_34_2` provides CMake with the information on where to find the QGIS dependencies. As they are provided in this repository, I am using a relative path to find them.
 - `DQt5_DIR=/opt/Qt/5.15.2` instructs CMake where to find the Qt installation.
 - `DCMAKE_PREFIX_PATH=/opt/Qt/5.15.2/clang_64` instructs CMake to use the clang compiler shipped with Qt.
+- `DCMAKE_OSX_ARCHITECTURES=x86_64` tells CMake to build for 64-bit x86 architectures. This is because so far, QGIS is still build using x86, and the plugin needs to be built for the same target architecture. On ARM machines, the x86 emulation will be used.
 - Finally, we want to build in release configuration (otherwise, the created library may not work correctly with a shipped QGIS, which is also built in release mode): `CMAKE_BUILD_TYPE=Release`.
 
 If the code generation was successful, run the build with `make`.
