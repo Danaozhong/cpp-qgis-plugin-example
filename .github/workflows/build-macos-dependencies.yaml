@@ -18,13 +18,13 @@ on:
     inputs:
       qgis-version:
         description: "The QGIS version to build the dependencies."
-        default: '3_34_2'
+        default: '3_36_3'
       lib-version:
         description: "The QGIS version as a different string."
-        default: '3.34'
+        default: '3.36'
       build-timestamp:
-        description: "The QGIS build timestamp."
-        default: '20231222_122631'
+        description: "The QGIS build timestamp (you can find it here: `https://download.qgis.org/downloads/macos/pr/`)."
+        default: '20240517_122510'
         
 
 env:
