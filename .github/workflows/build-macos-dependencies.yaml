@@ -122,7 +122,7 @@ jobs:
     - name: Copy the generated header files in *.src to the library directory
       run: |
         mkdir -p ${{ env.OUT_DIR }}/${{ env.SRC_PATH }}/ui
-        cp -v -R ${{ env.BUILD_DIR }}/src/ui/*.h ${{ env.OUT_DIR }}/${{ env.SRC_PATH }}/u
+        cp -v -R ${{ env.BUILD_DIR }}/src/ui/*.h ${{ env.OUT_DIR }}/${{ env.SRC_PATH }}/ui
 
     - uses: actions/upload-artifact@v4
       with:
