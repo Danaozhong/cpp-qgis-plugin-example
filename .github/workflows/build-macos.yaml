@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        qgis_version: [3_34_2]
+        qgis_version: [3_34_2, 3_36_3]
 
     steps:
     - uses: actions/checkout@v4
