@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        qgis_version: [3_28_4, 3_34_0]
+        qgis_version: [3_28_5, 3_34_0]
     env:
       EXT_OSGEO4W_ROOT: "D:/OSGeo4W"
       Qt5_DIR: "D:/OSGeo4W/apps/Qt5"
@@ -43,8 +43,7 @@ jobs:
     - name: Configure CMake
       run: |
         $Env:OSGEO4W_ROOT="${{ github.workspace }}/dependencies/qgis/windows_x86_64/${{ matrix.qgis_version }}/"
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -S ${{ github.workspace }}
+        cmake -B ${{ steps.strings.outputs.build-output-dir }} -S ${{ github.workspace }}
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
