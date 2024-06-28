@@ -9,21 +9,25 @@ on:
 jobs:
   build-windows:
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        qgis_version: [3_34_0]
     env:
-      OSGEO4W_ROOT: "D:/OSGeo4W"
-      Qt5_DIR: "D:/OSGeo4W/apps/Qt5"
+      EXT_OSGEO4W_ROOT: "C:/OSGeo4W"
+      Qt5_DIR: "C:/OSGeo4W/apps/Qt5"
 
     steps:
     - uses: actions/checkout@v4
 
-    - run: mkdir $env:OSGEO4W_ROOT | out-null
+    - run: mkdir $env:EXT_OSGEO4W_ROOT | out-null
 
     - name: Install OSGeo4W
       run: |
         $exe = 'osgeo4w-setup.exe'
         $url = 'http://download.osgeo.org/osgeo4w/v2/' + $exe
         (New-Object System.Net.WebClient).DownloadFile($url, $exe)
-        Start-Process ('.\'+$exe) -ArgumentList '--advanced --autoaccept --quiet-mode --only-site -s http://download.osgeo.org/osgeo4w/v2/ -P qgis,qgis-deps,qgis-common,qgis-devel,qt5-devel,qt5-libs,qt5-tools,qt5-libs-symbols' -Wait -NoNewWindow
+        Start-Process ('.\'+$exe) -ArgumentList '--advanced --autoaccept --quiet-mode --only-site -s http://download.osgeo.org/osgeo4w/v2/ -P qt5-devel,qt5-libs,qt5-tools,qt5-libs-symbols' -Wait -NoNewWindow
 
     - name: Set reusable strings
       id: strings
@@ -33,18 +37,18 @@ jobs:
 
     - name: Add Directories to PATH
       run: |
-        Add-Content $env:GITHUB_PATH $env:OSGEO4W_ROOT/bin
+        Add-Content $env:GITHUB_PATH $env:EXT_OSGEO4W_ROOT/bin
         Add-Content $env:GITHUB_PATH $env:Qt5_DIR/bin
 
     - name: Configure CMake
-      run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -S ${{ github.workspace }}
+      run: |
+        $Env:OSGEO4W_ROOT="${{ github.workspace }}/dependencies/qgis/windows_x86_64/${{ matrix.qgis_version }}/"
+        cmake -B ${{ steps.strings.outputs.build-output-dir }} -S ${{ github.workspace }}
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
 
     - uses: actions/upload-artifact@v3
       with:
-        name: qgis-plugin-windows
+        name: qgis-${{ matrix.qgis_version }}-plugin-windows
         path: ${{ steps.strings.outputs.build-output-dir }}/**/helloworldplugin.dll
