@@ -22,7 +22,6 @@
 # # Tim Sutton
 # # Larry Shaffer (2017-01-31)
 
-# MESSAGE("Searching for QGIS")
 IF(WIN32)
     # OSGEO4W_QGIS_SUBDIR relative install: qgis[-rel|-ltr][-dev], etc.
     IF(NOT OSGEO4W_QGIS_SUBDIR OR "${OSGEO4W_QGIS_SUBDIR}" STREQUAL "")

@@ -14,8 +14,8 @@ jobs:
       matrix:
         qgis_version: [3_34_0]
     env:
-      EXT_OSGEO4W_ROOT: "D:/OSGeo4W"
-      Qt5_DIR: "D:/OSGeo4W/apps/Qt5"
+      EXT_OSGEO4W_ROOT: "C:/OSGeo4W"
+      Qt5_DIR: "C:/OSGeo4W/apps/Qt5"
 
     steps:
     - uses: actions/checkout@v4
