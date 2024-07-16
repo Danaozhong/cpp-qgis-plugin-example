@@ -22,6 +22,9 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
+      - name: Support longpaths
+        run: git config --system core.longpaths true
+
       - uses: actions/checkout@v4
         with:
           repository: qgis/QGIS
