@@ -23,12 +23,15 @@ jobs:
         shell: msys2 {0}
     steps:
       - name: Support longpaths
+        shell: powershell
         run: git config --system core.longpaths true
 
       - uses: actions/checkout@v4
         with:
           repository: qgis/QGIS
           ref: final-${{ inputs.qgis-version || '3_36_3' }}
+      
+      - uses: msys2/setup-msys2@v2
 
       - name: Install core & build dependencies
         uses: msys2/setup-msys2@v2
