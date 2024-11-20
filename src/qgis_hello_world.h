@@ -19,12 +19,6 @@
 #include <QAction>
 #include <QApplication>
 
-static const QString s_name = QStringLiteral("Hello World Plugin");
-static const QString s_description = QStringLiteral("Sample Plugin");
-static const QString s_category = QStringLiteral("Plugins");
-static const QString s_version = QStringLiteral("Version 1.2.3");
-static const QString s_icon =  QStringLiteral( ":/plugin.svg" );
-static const QgisPlugin::PluginType s_type = QgisPlugin::UI;
 
 class HelloWorldPlugin : public QObject, public QgisPlugin
 {
@@ -34,6 +28,9 @@ public:
    /// @brief Constructor.
    /// @param qgis_if The Qgis interface.
    explicit HelloWorldPlugin(QgisInterface* qgis_if);
+
+   /// @brief Destructor
+   virtual ~HelloWorldPlugin() = default;
 
    /// @brief Called when the plugin is loaded.
    virtual void initGui() override;
