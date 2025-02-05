@@ -42,7 +42,7 @@ jobs:
     - name: Configure CMake
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
-	-DQGIS_BUILD_PATH=dependencies/qgis/linux_x86_64/${{ matrix.qgis_version }}
+	      -DQGIS_BUILD_PATH=dependencies/qgis/linux_x86_64/${{ matrix.qgis_version }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -S ${{ github.workspace }}
