@@ -16,6 +16,7 @@ jobs:
       matrix:
         build_type: [Release]
         c_compiler: [clang, gcc]
+        qgis_version: [3_10_4]
         include:
           - os: ubuntu-latest
             c_compiler: gcc
@@ -41,6 +42,7 @@ jobs:
     - name: Configure CMake
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
+	-DQGIS_BUILD_PATH=dependencies/qgis/linux_x86_64/${{ matrix.qgis_version }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -S ${{ github.workspace }}
@@ -50,5 +52,5 @@ jobs:
 
     - uses: actions/upload-artifact@v3
       with:
-        name: qgis-plugin-windows-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}
+        name: qgis-${{ matrix.qgis_version }}-plugin-windows-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}
         path: ${{ github.workspace }}/**/libhelloworldplugin.so
