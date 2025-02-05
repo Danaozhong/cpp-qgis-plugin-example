@@ -48,7 +48,7 @@ jobs:
         cd build
         make -j $(sysctl -n hw.ncpu)
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: qgis-plugin-macos-${{ matrix.qgis_version }}
         path: build/**/libhelloworldplugin.so

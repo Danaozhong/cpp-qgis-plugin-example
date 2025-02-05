@@ -50,7 +50,7 @@ jobs:
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: qgis-${{ matrix.qgis_version }}-plugin-windows-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}
         path: ${{ github.workspace }}/**/libhelloworldplugin.so
