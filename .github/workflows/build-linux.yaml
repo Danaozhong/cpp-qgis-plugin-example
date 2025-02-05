@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     strategy:
       fail-fast: false
@@ -16,11 +16,12 @@ jobs:
       matrix:
         build_type: [Release]
         c_compiler: [clang, gcc]
+        qgis_version: [3_10_4]
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             c_compiler: gcc
             cpp_compiler: g++
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             c_compiler: clang
             cpp_compiler: clang++
 
@@ -30,7 +31,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt -y update
-        sudo apt -y install qgis-dev
+        sudo apt -y install qt5-default
 
     - name: Set reusable strings
       id: strings
@@ -41,6 +42,7 @@ jobs:
     - name: Configure CMake
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DQGIS_PREFIX_PATH=dependencies/qgis/linux_x86_64/${{ matrix.qgis_version }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -S ${{ github.workspace }}
@@ -48,7 +50,7 @@ jobs:
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
-        name: qgis-plugin-windows-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}
+        name: qgis-${{ matrix.qgis_version }}-plugin-windows-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}
         path: ${{ github.workspace }}/**/libhelloworldplugin.so

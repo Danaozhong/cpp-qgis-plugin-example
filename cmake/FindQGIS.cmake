@@ -32,12 +32,12 @@ IF(WIN32)
         ENDIF()
     ENDIF()
 
-
     FIND_PATH(QGIS_PLUGIN_DIR
         NAMES plugin_offlineediting.dll
         PATHS
         "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/plugins"
         "$ENV{PROGRAMFILES}/QGIS/plugins"
+        NO_CMAKE_FIND_ROOT_PATH
     )
     FIND_PATH(QGIS_INCLUDE_DIR
         NAMES qgsapplication.h
@@ -47,8 +47,8 @@ IF(WIN32)
         "$ENV{OSGEO4W_ROOT}/include"
         "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/include"
         "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/include/qgis"
-        
         "$ENV{PROGRAMFILES}/QGIS/include"
+        NO_CMAKE_FIND_ROOT_PATH
     )
     FIND_LIBRARY(QGIS_CORE_LIBRARY
         NAMES qgis_core
@@ -57,8 +57,8 @@ IF(WIN32)
         "$ENV{LIB}"
         "$ENV{OSGEO4W_ROOT}/lib"
         "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/lib"
-        "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/lib/qgis"
         "$ENV{PROGRAMFILES}/QGIS/lib"
+        NO_CMAKE_FIND_ROOT_PATH
     )
     FIND_LIBRARY(QGIS_GUI_LIBRARY
         NAMES qgis_gui
@@ -67,8 +67,8 @@ IF(WIN32)
         "$ENV{LIB}"
         "$ENV{OSGEO4W_ROOT}/lib"
         "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/lib"
-        "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/lib/qgis"
         "$ENV{PROGRAMFILES}/QGIS/lib"
+        NO_CMAKE_FIND_ROOT_PATH
     )
     FIND_LIBRARY(QGIS_ANALYSIS_LIBRARY
         NAMES qgis_analysis
@@ -77,8 +77,8 @@ IF(WIN32)
         "$ENV{LIB}"
         "$ENV{OSGEO4W_ROOT}/lib"
         "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/lib"
-        "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/lib/qgis"
         "$ENV{PROGRAMFILES}/QGIS/lib"
+        NO_CMAKE_FIND_ROOT_PATH
     )
 ELSE(WIN32)
     IF(UNIX)
@@ -88,7 +88,7 @@ ELSE(WIN32)
             PATHS
             ${QGIS_BUILD_PATH}/PlugIns/qgis
             ${QGIS_MAC_PATH}/PlugIns/qgis
-            ${QGIS_PREFIX_PATH}/lib/qgis/plugins/
+            ${QGIS_PREFIX_PATH}/lib/qgis/plugins
             /usr/lib64/qgis/plugins
             /usr/lib/qgis
             /usr/lib/qgis/plugins
@@ -149,47 +149,50 @@ ELSE(WIN32)
             NAMES qgis_core
             PATHS
             ${QGIS_BUILD_PATH}/output/lib
+            ${QGIS_PREFIX_PATH}/lib
             ${QGIS_MAC_PATH}/Frameworks
             ${QGIS_MAC_PATH}/lib
-            ${QGIS_PREFIX_PATH}/lib/
             /usr/lib64
             /usr/lib
             /usr/local/lib
             /Library/Frameworks
             "$ENV{LIB_DIR}/lib/"
+            NO_DEFAULT_PATH
         )
         FIND_LIBRARY(QGIS_GUI_LIBRARY
             NAMES qgis_gui
             PATHS
             ${QGIS_BUILD_PATH}/output/lib
+            ${QGIS_PREFIX_PATH}/lib
             ${QGIS_MAC_PATH}/Frameworks
             ${QGIS_MAC_PATH}/lib
-            ${QGIS_PREFIX_PATH}/lib/
             /usr/lib64
             /usr/lib
             /usr/local/lib
             /Library/Frameworks
             "$ENV{LIB_DIR}/lib/"
+            NO_DEFAULT_PATH
         )
         FIND_LIBRARY(QGIS_ANALYSIS_LIBRARY
             NAMES qgis_analysis
             PATHS
             ${QGIS_BUILD_PATH}/output/lib
+            ${QGIS_PREFIX_PATH}/lib
             ${QGIS_MAC_PATH}/Frameworks
             ${QGIS_MAC_PATH}/lib
-            ${QGIS_PREFIX_PATH}/lib/
             /usr/lib64
             /usr/lib
             /usr/local/lib
             /Library/Frameworks
             "$ENV{LIB_DIR}/lib/"
+            NO_DEFAULT_PATH
         )
     ENDIF(UNIX)
 ENDIF(WIN32)
 
 IF(QGIS_INCLUDE_DIR)
     SET(QGIS_VERSION QGIS_VERSION-NOTFOUND)
-    FIND_FILE(_qgsconfig_h qgsconfig.h PATHS ${QGIS_INCLUDE_DIR})
+    FIND_FILE(_qgsconfig_h qgsconfig.h PATHS ${QGIS_INCLUDE_DIR} NO_DEFAULT_PATH)
 
     IF(_qgsconfig_h)
         FILE(READ ${_qgsconfig_h} _qgsconfig)
@@ -218,16 +221,15 @@ ENDIF()
 
 IF(NOT QGIS_FIND_QUIETLY)
     MESSAGE(STATUS "Found QGIS: ${QGIS_VERSION}")
+    MESSAGE(STATUS "Found QGIS include dir: ${QGIS_INCLUDE_DIR}")
     MESSAGE(STATUS "Found QGIS core: ${QGIS_CORE_LIBRARY}")
     MESSAGE(STATUS "Found QGIS gui: ${QGIS_GUI_LIBRARY}")
     MESSAGE(STATUS "Found QGIS analysis: ${QGIS_ANALYSIS_LIBRARY}")
     MESSAGE(STATUS "Found QGIS plugins directory: ${QGIS_PLUGIN_DIR}")
-    MESSAGE(STATUS "Found QGIS include directory: ${QGIS_INCLUDE_DIR}")
-    
 ENDIF(NOT QGIS_FIND_QUIETLY)
 
 IF(NOT QGIS_FOUND)
     IF(QGIS_FIND_REQUIRED)
-        MESSAGE(FATAL_ERROR "Could not find QGIS. Please set $ENV{OSGEO4W_ROOT} envvar.")
+        MESSAGE(FATAL_ERROR "Could not find QGIS. Please set 'OSGEO4W_ROOT' envvar (currently set to: $ENV{OSGEO4W_ROOT}).")
     ENDIF(QGIS_FIND_REQUIRED)
 ENDIF(NOT QGIS_FOUND)
