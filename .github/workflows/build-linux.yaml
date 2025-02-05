@@ -28,11 +28,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        sudo apt -y update
-        sudo apt -y install qgis-dev
-
     - name: Set reusable strings
       id: strings
       shell: bash
