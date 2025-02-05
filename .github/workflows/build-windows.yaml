@@ -48,7 +48,7 @@ jobs:
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: qgis-${{ matrix.qgis_version }}-plugin-windows
         path: ${{ steps.strings.outputs.build-output-dir }}/**/helloworldplugin.dll
