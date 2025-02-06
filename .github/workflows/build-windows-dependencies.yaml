@@ -18,18 +18,18 @@ on:
 jobs:
   build-windows:
     runs-on: windows-2022
-    defaults:
-      run:
-        shell: msys2 {0}
     steps:
       - name: Support longpaths
         shell: powershell
         run: git config --system core.longpaths true
 
       - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
         with:
           repository: qgis/QGIS
           ref: final-${{ inputs.qgis-version || '3_36_3' }}
+          path: qgis
 
       - name: 🐩 Install CMake and Ninja
         uses: lukka/get-cmake@latest
@@ -52,9 +52,9 @@ jobs:
 
 
       - name: Configure QGIS
+        shell: bash
         run: |
           cmake \
-            -G"Ninja" \
             -G Ninja \
             -D CMAKE_BUILD_TYPE=Release \
             -D WITH_VCPKG=ON \
@@ -75,10 +75,11 @@ jobs:
             -D CMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -D WITH_QTWEBKIT=OFF \
             -D VCPKG_INSTALL_OPTIONS="--x-buildtrees-root=C:/src" \
-            -S . \
+            -S qgis \
             -B build
 
       - name: Build QGIS
+        shell: bash
         run: |
           cmake --build build --config Release
           ccache -s
