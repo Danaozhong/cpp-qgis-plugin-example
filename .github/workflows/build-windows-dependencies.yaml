@@ -17,7 +17,7 @@ on:
 
 jobs:
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
     defaults:
       run:
         shell: msys2 {0}
@@ -30,40 +30,55 @@ jobs:
         with:
           repository: qgis/QGIS
           ref: final-${{ inputs.qgis-version || '3_36_3' }}
-      
-      - uses: msys2/setup-msys2@v2
 
-      - name: Install core & build dependencies
-        uses: msys2/setup-msys2@v2
+      - name: 🐩 Install CMake and Ninja
+        uses: lukka/get-cmake@latest
         with:
-          msystem: UCRT64
-          install: base-devel
-          pacboy: >-
-            draco:p exiv2:p gdal:p gsl:p hdf5:p libxml2:p libzip:p netcdf:p opencl-icd:p pdal:p
-            protobuf:p proj:p qca-qt5:p qscintilla-qt5:p qt5-3d:p qt5-base:p qt5-declarative:p
-            qt5-gamepad:p qt5-location:p qt5-serialport:p qt5-svg:p qtkeychain-qt5:p qtwebkit:p
-            qwt-qt5:p spatialindex:p cc:p cmake:p ninja:p opencl-clhpp:p qt5-tools:p python:p ccache:p
-            python-gdal:p python-owslib:p python-pyqt5:p python-qscintilla-qt5:p pyqt-builder:p sip:p
-          update: true
-          release: false
+          cmakeVersion: 3.29.6
+
+      - name: 🧽 Developer Command Prompt for Microsoft Visual C++
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: 🎡 Setup vcpkg
+        uses: ./.github/actions/setup-vcpkg
+
+      - name: 🦬 Setup flex/bison
+        uses: robinraju/release-downloader@v1.11
+        with:
+          repository: 'lexxmark/winflexbison'
+          fileName: '*.zip'
+          tag: 'v2.5.24'
+          extract: true
+
 
       - name: Configure QGIS
         run: |
           cmake \
             -G"Ninja" \
-            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-            -DPython_EXECUTABLE=${MINGW_PREFIX}/bin/python \
-            -DWITH_3D=ON \
-            -DWITH_DRACO=ON \
-            -DWITH_PDAL=ON \
-            -DWITH_CUSTOM_WIDGETS=ON \
-            -DWITH_BINDINGS=ON \
-            -DWITH_GRASS=OFF \
-            -DUSE_CCACHE=ON \
+            -G Ninja \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D WITH_VCPKG=ON \
+            -D CREATE_ZIP=ON \
+            -D VCPKG_TARGET_TRIPLET=x64-windows-release \
+            -D VCPKG_HOST_TRIPLET=x64-windows-release \
+            -D WITH_DESKTOP=ON \
+            -D WITH_3D=ON \
+            -D WITH_BINDINGS=ON \
+            -D ENABLE_TESTS=OFF \
+            -D BUILD_WITH_QT6=ON \
+            -D USE_CCACHE=ON \
+            -D ENABLE_UNITY_BUILDS=ON \
+            -D FLEX_EXECUTABLE="${SOURCE_DIR}/win_flex.exe" \
+            -D BISON_EXECUTABLE="${SOURCE_DIR}/win_bison.exe" \
+            -D SIP_BUILD_EXECUTABLE="${BUILD_DIR}\vcpkg_installed\x64-windows-release\tools\python3\Scripts\sip-build.exe" \
+            -D CMAKE_C_COMPILER_LAUNCHER=ccache \
+            -D CMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -D WITH_QTWEBKIT=OFF \
+            -D VCPKG_INSTALL_OPTIONS="--x-buildtrees-root=C:/src" \
             -S . \
             -B build
 
       - name: Build QGIS
         run: |
-          cmake --build build
+          cmake --build build --config Release
           ccache -s
