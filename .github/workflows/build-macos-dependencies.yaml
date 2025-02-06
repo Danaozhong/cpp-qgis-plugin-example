@@ -114,7 +114,9 @@ jobs:
       run: |
         cd ${{ env.BUILD_DIR }}/output/lib
         ls -la
-        cd ${{ env.BUILD_DIR }}/output/lib/qgis_3d.framework/Versions/
+        cd ${{ env.BUILD_DIR }}/output/lib/qgis_3d.framework
+        ls -la
+        cd ${{ env.BUILD_DIR }}/output/lib/qgis_3d.framework/Versions
         ls -la
         cd ${{ env.BUILD_DIR }}/output/lib/qgis_3d.framework/Versions/${{ inputs.lib-version }}
         ls -la
