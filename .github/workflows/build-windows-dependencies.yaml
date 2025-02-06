@@ -1,0 +1,85 @@
+name: Build the Plugin Dependencies (Windows)
+
+on:
+  workflow_dispatch:
+    inputs:
+      qgis-version:
+        description: "The QGIS version to build the dependencies."
+        default: '3_36_3'
+      lib-version:
+        description: "The QGIS version as a different string."
+        default: '3.36'
+      build-timestamp:
+        description: "The QGIS build timestamp (you can find it here: `https://download.qgis.org/downloads/macos/pr/`)."
+        default: '20240517_122510'
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-windows:
+    runs-on: windows-2022
+    steps:
+      - name: Support longpaths
+        shell: powershell
+        run: git config --system core.longpaths true
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: qgis/QGIS
+          ref: final-${{ inputs.qgis-version || '3_36_3' }}
+          path: qgis
+
+      - name: 🐩 Install CMake and Ninja
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: 3.29.6
+
+      - name: 🧽 Developer Command Prompt for Microsoft Visual C++
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: 🎡 Setup vcpkg
+        uses: ./.github/actions/setup-vcpkg
+
+      - name: 🦬 Setup flex/bison
+        uses: robinraju/release-downloader@v1.11
+        with:
+          repository: 'lexxmark/winflexbison'
+          fileName: '*.zip'
+          tag: 'v2.5.24'
+          extract: true
+
+
+      - name: Configure QGIS
+        shell: bash
+        run: |
+          cmake \
+            -G Ninja \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D WITH_VCPKG=ON \
+            -D CREATE_ZIP=ON \
+            -D VCPKG_TARGET_TRIPLET=x64-windows-release \
+            -D VCPKG_HOST_TRIPLET=x64-windows-release \
+            -D WITH_DESKTOP=ON \
+            -D WITH_3D=ON \
+            -D WITH_BINDINGS=ON \
+            -D ENABLE_TESTS=OFF \
+            -D BUILD_WITH_QT6=ON \
+            -D USE_CCACHE=ON \
+            -D ENABLE_UNITY_BUILDS=ON \
+            -D FLEX_EXECUTABLE="${SOURCE_DIR}/win_flex.exe" \
+            -D BISON_EXECUTABLE="${SOURCE_DIR}/win_bison.exe" \
+            -D SIP_BUILD_EXECUTABLE="${BUILD_DIR}\vcpkg_installed\x64-windows-release\tools\python3\Scripts\sip-build.exe" \
+            -D CMAKE_C_COMPILER_LAUNCHER=ccache \
+            -D CMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -D WITH_QTWEBKIT=OFF \
+            -D VCPKG_INSTALL_OPTIONS="--x-buildtrees-root=C:/src" \
+            -S qgis \
+            -B build
+
+      - name: Build QGIS
+        shell: bash
+        run: |
+          cmake --build build --config Release
+          ccache -s
