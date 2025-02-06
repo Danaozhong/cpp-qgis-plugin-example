@@ -12,19 +12,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build_config: [ 
-          {qgis_version: 3_20_0, release: rel},
-          {qgis_version: 3_28_3, release: rel},
-          {qgis_version: 3_34_0, release: rel},
-          {qgis_version: 3_34_1, release: rel},
-          {qgis_version: 3_36_2, release: rel},
-          {qgis_version: 3_36_3, release: rel},
-          {qgis_version: 3_38_0, release: rel},
-          {qgis_version: 3_38_3, release: rel},
-          {qgis_version: 3_40_0, release: rel},
-          {qgis_version: 3_40_2, release: rel},
-          {qgis_version: 3_40_3, release: rel},
-        ]
+        build_config:
+          - { qgis_version: 3.20.0-1, release: rel }
+          - { qgis_version: 3.28.3-1, release: rel }
+          - { qgis_version: 3.34.0-1, release: rel }
+          - { qgis_version: 3.34.1-1, release: rel }
+          - { qgis_version: 3.36.2-1, release: rel }
+          - { qgis_version: 3.36.3-1, release: rel }
+          - { qgis_version: 3.38.0-1, release: rel }
+          - { qgis_version: 3.38.3-1, release: rel }
+          - { qgis_version: 3.40.0-1, release: rel }
+          - { qgis_version: 3.40.2-1, release: rel }
+          - { qgis_version: 3.40.3-1, release: rel }
+          - { qgis_version: 3.44.9-2, release: ltr }
     env:
       EXT_OSGEO4W_ROOT: "C:/OSGeo4W"
       Qt5_DIR: "C:/OSGeo4W/apps/Qt5"
@@ -32,14 +32,47 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - run: mkdir $env:EXT_OSGEO4W_ROOT | out-null
+    - name: Create OSGeo4W root
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path $env:EXT_OSGEO4W_ROOT | Out-Null
+
+    - name: Resolve and download QGIS development package
+      id: qgis-package
+      shell: pwsh
+      run: |
+        $version = '${{ matrix.build_config.qgis_version }}'
+        $release = '${{ matrix.build_config.release }}'
+        $rootUrl = 'https://download.osgeo.org/osgeo4w/v2/x86_64/release/qgis'
+
+        $packageInfo = switch ($release) {
+          'ltr' { @{ subdir = 'qgis-ltr'; filePrefix = 'qgis-ltr-devel'; qgisSubdir = 'qgis-ltr' } }
+          default { @{ subdir = 'qgis'; filePrefix = 'qgis-devel'; qgisSubdir = 'qgis' } }
+        }
+
+        $archiveName = "$($packageInfo.filePrefix)-$version.tar.bz2"
+        $packageUrl = "$rootUrl/$($packageInfo.subdir)/$($packageInfo.filePrefix)/$archiveName"
+        Invoke-WebRequest -Uri $packageUrl -OutFile $archiveName
+        tar -xf $archiveName -C $env:EXT_OSGEO4W_ROOT
+
+        "package-url=$packageUrl" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        "qgis-subdir=$($packageInfo.qgisSubdir)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
     - name: Install OSGeo4W
+      shell: pwsh
       run: |
         $exe = 'osgeo4w-setup.exe'
-        $url = 'http://download.osgeo.org/osgeo4w/v2/' + $exe
-        (New-Object System.Net.WebClient).DownloadFile($url, $exe)
-        Start-Process ('.\'+$exe) -ArgumentList '--advanced --autoaccept --quiet-mode --only-site -s http://download.osgeo.org/osgeo4w/v2/ -P qt5-devel,qt5-libs,qt5-tools,qt5-libs-symbols' -Wait -NoNewWindow
+        $url = 'https://download.osgeo.org/osgeo4w/v2/' + $exe
+        Invoke-WebRequest -Uri $url -OutFile $exe
+        Start-Process ('.\' + $exe) -ArgumentList @(
+          '--advanced',
+          '--autoaccept',
+          '--quiet-mode',
+          '--only-site',
+          '-R', $env:EXT_OSGEO4W_ROOT,
+          '-s', 'https://download.osgeo.org/osgeo4w/v2/',
+          '-P', 'qt5-devel,qt5-libs,qt5-tools,qt5-libs-symbols'
+        ) -Wait -NoNewWindow
 
     - name: Set reusable strings
       id: strings
@@ -48,14 +81,17 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
     - name: Add Directories to PATH
+      shell: pwsh
       run: |
-        Add-Content $env:GITHUB_PATH $env:EXT_OSGEO4W_ROOT/bin
-        Add-Content $env:GITHUB_PATH $env:Qt5_DIR/bin
+        Add-Content $env:GITHUB_PATH "$env:EXT_OSGEO4W_ROOT/bin"
+        Add-Content $env:GITHUB_PATH "$env:Qt5_DIR/bin"
 
     - name: Configure CMake
+      shell: pwsh
       run: |
-        $Env:OSGEO4W_ROOT="${{ github.workspace }}/dependencies/qgis/windows_x86_64/${{ matrix.build_config.release }}/${{ matrix.build_config.qgis_version }}/"
-        cmake -B ${{ steps.strings.outputs.build-output-dir }} -S ${{ github.workspace }}
+        $Env:OSGEO4W_ROOT = $env:EXT_OSGEO4W_ROOT
+        $Env:OSGEO4W_QGIS_SUBDIR = '${{ steps.qgis-package.outputs.qgis-subdir }}'
+        cmake -B ${{ steps.strings.outputs.build-output-dir }} -S ${{ github.workspace }} -DQt5_DIR="$env:Qt5_DIR"
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
