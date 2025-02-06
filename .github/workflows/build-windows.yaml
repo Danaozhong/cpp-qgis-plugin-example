@@ -20,6 +20,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Download QGIS Library
+      run: |
+        $version_using_dots = '${{ matrix.qgis_version }}'.Replace('_', '.')
+        $zip = 'qgis-devel-' + $version_using_dots + '-1.tar.bz2'
+        $url = 'https://download.osgeo.org/osgeo4w/v2/snapshots/1698417287/x86_64/release/qgis/qgis/qgis-devel/' + $zip
+        (New-Object System.Net.WebClient).DownloadFile($url, $zip)
+        tar -xvzf .\$zip -C dependencies/qgis\win_x86_64
+
+
     - run: mkdir $env:EXT_OSGEO4W_ROOT | out-null
 
     - name: Install OSGeo4W
@@ -42,7 +51,7 @@ jobs:
 
     - name: Configure CMake
       run: |
-        $Env:OSGEO4W_ROOT="${{ github.workspace }}/dependencies/qgis/windows_x86_64/${{ matrix.qgis_version }}/"
+        $Env:OSGEO4W_ROOT="${{ github.workspace }}/dependencies/qgis/win_x86_64/"
         cmake -B ${{ steps.strings.outputs.build-output-dir }} -S ${{ github.workspace }}
 
     - name: Build
