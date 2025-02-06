@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        qgis_version: [3_34_0, 3_36_3, 3_38_0, 3_38_3, 3_40_0, 3_40_2]
+        qgis_version: [3_34_0, 3_36_3, 3_38_0, 3_38_3, 3_40_0, 3_40_2, 3_40_3]
     env:
       EXT_OSGEO4W_ROOT: "C:/OSGeo4W"
       Qt5_DIR: "C:/OSGeo4W/apps/Qt5"
