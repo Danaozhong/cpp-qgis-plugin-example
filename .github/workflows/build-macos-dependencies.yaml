@@ -103,6 +103,7 @@ jobs:
               -DWITH_PDAL=TRUE \
               -DWITH_EPT=TRUE \
               -DCMAKE_OSX_ARCHITECTURES=x86_64 \
+              -DCMAKE_BUILD_TYPE=Debug \
               ..
 
     - name: Build QGIS
@@ -112,15 +113,17 @@ jobs:
 
     - name: Debug help
       run: |
-        cd ${{ env.BUILD_DIR }}/output/lib
+        cd ${{ env.BUILD_DIR }}
+        find . -name 'qgs3dmapsettings.h'
+        cd output/lib
         ls -la
-        cd ${{ env.BUILD_DIR }}/output/lib/qgis_3d.framework
+        cd qgis_3d.framework
         ls -la
-        cd ${{ env.BUILD_DIR }}/output/lib/qgis_3d.framework/Versions
+        cd Versions
         ls -la
-        cd ${{ env.BUILD_DIR }}/output/lib/qgis_3d.framework/Versions/${{ inputs.lib-version }}
+        cd ${{ inputs.lib-version }}
         ls -la
-        cd ${{ env.BUILD_DIR }}/output/lib/qgis_3d.framework/Versions/${{ inputs.lib-version }}/Headers || true
+        cd Headers || true
         ls -la
 
     - name: Copy the built headers to the already existing libraries
