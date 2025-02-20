@@ -62,17 +62,22 @@ jobs:
     - name: Copy pre-built libraries
       run: |
         mkdir -p ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
-        cp -v -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_3d.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_analysis.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_core.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_gui.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_native.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
+
+        if [ ${{ inputs.release-channel }} == "pr" ]; then
+            QGIS_DIR_NAME="QGIS.app"
+        else
+            QGIS_DIR_NAME="QGIS-LTR.app"
+        fi
+
+        cp -v -R /Volumes/$QGIS_DIR_NAME/$QGIS_DIR_NAME/Contents/Frameworks/qgis_3d.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
+        cp -R /Volumes/$QGIS_DIR_NAME/$QGIS_DIR_NAME/Contents/Frameworks/qgis_analysis.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
+        cp -R /Volumes/$QGIS_DIR_NAME/$QGIS_DIR_NAME/Contents/Frameworks/qgis_core.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
+        cp -R /Volumes/$QGIS_DIR_NAME/$QGIS_DIR_NAME/Contents/Frameworks/qgis_gui.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
+        cp -R /Volumes/$QGIS_DIR_NAME/$QGIS_DIR_NAME/Contents/Frameworks/qgis_native.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
         cd ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
         ls -la
 
-    - name: Unmount official QGIS
-      run: |
-        hdiutil detach /Volumes/QGIS.app/
+        hdiutil detach /Volumes/$QGIS_DIR_NAME/
 
     - name: Download Qt
       run: |
