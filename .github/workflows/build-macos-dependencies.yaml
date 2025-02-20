@@ -103,7 +103,7 @@ jobs:
               -DWITH_PDAL=TRUE \
               -DWITH_EPT=TRUE \
               -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_BUILD_TYPE=RelWithDebInfo \
               ..
 
     - name: Build QGIS
