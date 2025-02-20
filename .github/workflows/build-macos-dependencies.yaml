@@ -111,21 +111,6 @@ jobs:
         cd ${{ env.BUILD_DIR }}
         make -j $(sysctl -n hw.ncpu)
 
-    - name: Debug help
-      run: |
-        cd ${{ env.BUILD_DIR }}
-        find . -name 'qgs3dmapsettings.h'
-        cd output/lib
-        ls -la
-        cd qgis_3d.framework
-        ls -la
-        cd Versions
-        ls -la
-        cd ${{ inputs.lib-version }}
-        ls -la
-        cd Headers || true
-        ls -la
-
     - name: Copy the built headers to the already existing libraries
       run: |
         cp -v -R ${{ env.BUILD_DIR }}/output/lib/qgis_3d.framework/Versions/${{ inputs.lib-version }}/Headers ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}/qgis_3d.framework
