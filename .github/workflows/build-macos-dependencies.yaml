@@ -25,7 +25,9 @@ on:
       build-timestamp:
         description: "The QGIS build timestamp (you can find it here: `https://download.qgis.org/downloads/macos/pr/`)."
         default: '20240517_122510'
-        
+      release-channel:
+        description: "The QGIS release channel to use (either `pr` or `ltr`)."
+        default: 'pr'
 
 env:
   QT_VERSION: 5.15.2
@@ -47,11 +49,8 @@ jobs:
         ref: final-${{ inputs.qgis-version }}
 
     - name: Download the Official QGIS Release
-      # use a wildcard for the build date, as the build date is not known
       run: |
-        wget -O qgis_installer.dmg https://download.qgis.org/downloads/macos/pr/qgis_pr_final-${{ inputs.qgis-version }}_${{ inputs.build-timestamp }}.dmg
-
-      # wget -O qgis_installer.dmg -r --no-parent -A 'qgis_pr_final-${{ inputs.qgis-version }}_*.dmg' https://download.qgis.org/downloads/macos/pr/
+        wget -O qgis_installer.dmg https://download.qgis.org/downloads/macos/${{ inputs.release-channel }}/qgis_${{ inputs.release-channel }}_final-${{ inputs.qgis-version }}_${{ inputs.build-timestamp }}.dmg
 
     - name: Mount Official QGIS
       # To bypass EULA, we convert to cdr format.
@@ -63,17 +62,22 @@ jobs:
     - name: Copy pre-built libraries
       run: |
         mkdir -p ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
-        cp -v -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_3d.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_analysis.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_core.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_gui.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
-        cp -R /Volumes/QGIS.app/QGIS.app/Contents/Frameworks/qgis_native.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
+
+        if [ ${{ inputs.release-channel }} == "pr" ]; then
+            QGIS_DIR_NAME="QGIS.app"
+        else
+            QGIS_DIR_NAME="QGIS-LTR.app"
+        fi
+
+        cp -v -R /Volumes/$QGIS_DIR_NAME/$QGIS_DIR_NAME/Contents/Frameworks/qgis_3d.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
+        cp -R /Volumes/$QGIS_DIR_NAME/$QGIS_DIR_NAME/Contents/Frameworks/qgis_analysis.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
+        cp -R /Volumes/$QGIS_DIR_NAME/$QGIS_DIR_NAME/Contents/Frameworks/qgis_core.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
+        cp -R /Volumes/$QGIS_DIR_NAME/$QGIS_DIR_NAME/Contents/Frameworks/qgis_gui.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
+        cp -R /Volumes/$QGIS_DIR_NAME/$QGIS_DIR_NAME/Contents/Frameworks/qgis_native.framework ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
         cd ${{ env.OUT_DIR }}/${{ env.LIB_PATH }}
         ls -la
 
-    - name: Unmount official QGIS
-      run: |
-        hdiutil detach /Volumes/QGIS.app/
+        hdiutil detach /Volumes/$QGIS_DIR_NAME/
 
     - name: Download Qt
       run: |
@@ -104,6 +108,7 @@ jobs:
               -DWITH_PDAL=TRUE \
               -DWITH_EPT=TRUE \
               -DCMAKE_OSX_ARCHITECTURES=x86_64 \
+              -DCMAKE_BUILD_TYPE=RelWithDebInfo \
               ..
 
     - name: Build QGIS
@@ -125,6 +130,7 @@ jobs:
         cp -v -R ${{ env.BUILD_DIR }}/src/ui/*.h ${{ env.OUT_DIR }}/${{ env.SRC_PATH }}/ui
 
     - uses: actions/upload-artifact@v4
+      if: ${{ always() }}
       with:
         name: qgis-macos-libraries-${{ inputs.qgis-version }}_${{ inputs.build-timestamp }}
         path: ${{ env.OUT_DIR }}
