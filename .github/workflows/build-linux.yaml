@@ -8,7 +8,6 @@ on:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-20.04
 
     strategy:
       fail-fast: false
@@ -16,14 +15,17 @@ jobs:
       matrix:
         build_type: [Release]
         c_compiler: [clang, gcc]
-        qgis_version: [3_10_4]
+        build_config: [ 
+          {qgis_version: 3_10_4, release: rel, os: ubuntu-24.04},
+          {qgis_version: 3_44_4, release: ltr, os: ubuntu-24.04},
+        ]
         include:
-          - os: ubuntu-20.04
-            c_compiler: gcc
+          - c_compiler: gcc
             cpp_compiler: g++
-          - os: ubuntu-20.04
-            c_compiler: clang
+          - c_compiler: clang
             cpp_compiler: clang++
+
+    runs-on: ${{ matrix.build_config.os }}
 
     steps:
     - uses: actions/checkout@v4
@@ -31,7 +33,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt -y update
-        sudo apt -y install qt5-default
+        sudo apt -y install qtbase5-dev qt5-qmake cmake nlohmann-json3-dev
 
     - name: Set reusable strings
       id: strings
@@ -42,15 +44,16 @@ jobs:
     - name: Configure CMake
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DQGIS_PREFIX_PATH=dependencies/qgis/linux_x86_64/${{ matrix.qgis_version }}
+        -DQGIS_PREFIX_PATH=dependencies/qgis/linux_x86_64/${{ matrix.build_config.release }}/${{ matrix.build_config.qgis_version }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -S ${{ github.workspace }}
+        -DCMAKE_BUILD_TYPE=Release
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
     - uses: actions/upload-artifact@v4
       with:
-        name: qgis-${{ matrix.qgis_version }}-plugin-windows-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}
+        name: qgis-${{ matrix.build_config.release }}-${{ matrix.build_config.qgis_version }}-plugin-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}
         path: ${{ github.workspace }}/**/libhelloworldplugin.so

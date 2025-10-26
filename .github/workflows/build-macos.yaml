@@ -17,7 +17,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        qgis_version: [3_32_3, 3_34_2, 3_36_3, 3_38_0, 3_38_3, 3_40_0]
+        build_config: [ 
+          {qgis_version: 3_32_3, release: rel},
+          {qgis_version: 3_34_2, release: rel},
+          {qgis_version: 3_36_3, release: rel},
+          {qgis_version: 3_38_0, release: rel},
+          {qgis_version: 3_38_3, release: rel},
+          {qgis_version: 3_40_0, release: rel},
+        ]
 
     steps:
     - uses: actions/checkout@v4
@@ -36,7 +43,7 @@ jobs:
         mkdir build
         cd build
         cmake \
-        -DQGIS_BUILD_PATH=dependencies/qgis/macos_x86_64/${{ matrix.qgis_version }} \
+        -DQGIS_BUILD_PATH=dependencies/qgis/macos_x86_64/${{ matrix.build_config.release }}/${{ matrix.build_config.qgis_version }} \
         -DQt5_DIR=${{ env.Qt5_DIR }} \
         -DCMAKE_PREFIX_PATH=${{ env.Qt5_DIR }}/clang_64 \
         -DCMAKE_BUILD_TYPE=Release \
@@ -50,5 +57,5 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: qgis-plugin-macos-${{ matrix.qgis_version }}
+        name: qgis-plugin-macos-${{ matrix.build_config.release }}-${{ matrix.build_config.qgis_version }}
         path: build/**/libhelloworldplugin.so

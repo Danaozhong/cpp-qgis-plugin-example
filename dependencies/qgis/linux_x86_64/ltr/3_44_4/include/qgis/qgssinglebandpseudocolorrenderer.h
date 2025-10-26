@@ -1,0 +1,139 @@
+/***************************************************************************
+                         qgssinglebandpseudocolorrenderer.h
+                         ----------------------------------
+    begin                : January 2012
+    copyright            : (C) 2012 by Marco Hugentobler
+    email                : marco at sourcepole dot ch
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+
+#ifndef QGSSINGLEBANDPSEUDOCOLORRENDERER_H
+#define QGSSINGLEBANDPSEUDOCOLORRENDERER_H
+
+#include "qgis_core.h"
+#include "qgis_sip.h"
+#include "qgscolorramp.h"
+#include "qgsrasterrenderer.h"
+#include "qgsrectangle.h"
+
+class QDomElement;
+class QgsRasterShader;
+
+/**
+ * \ingroup core
+  * \brief Raster renderer pipe for single band pseudocolor.
+  */
+class CORE_EXPORT QgsSingleBandPseudoColorRenderer: public QgsRasterRenderer
+{
+
+  public:
+
+    //! Note: takes ownership of QgsRasterShader
+    QgsSingleBandPseudoColorRenderer( QgsRasterInterface *input, int band = -1, QgsRasterShader *shader SIP_TRANSFER = nullptr );
+
+    //! QgsSingleBandPseudoColorRenderer cannot be copied. Use clone() instead.
+    QgsSingleBandPseudoColorRenderer( const QgsSingleBandPseudoColorRenderer & ) = delete;
+    //! QgsSingleBandPseudoColorRenderer cannot be copied. Use clone() instead.
+    const QgsSingleBandPseudoColorRenderer &operator=( const QgsSingleBandPseudoColorRenderer & ) = delete;
+
+    QgsSingleBandPseudoColorRenderer *clone() const override SIP_FACTORY;
+    Qgis::RasterRendererFlags flags() const override;
+    static QgsRasterRenderer *create( const QDomElement &elem, QgsRasterInterface *input ) SIP_FACTORY;
+
+    QgsRasterBlock *block( int bandNo, const QgsRectangle &extent, int width, int height, QgsRasterBlockFeedback *feedback = nullptr ) override SIP_FACTORY;
+
+    //! Takes ownership of the shader
+    void setShader( QgsRasterShader *shader SIP_TRANSFER );
+
+    //! Returns the raster shader
+    QgsRasterShader *shader() { return mShader.get(); }
+
+    //! Returns the raster shader
+    const QgsRasterShader *shader() const SIP_PYNAME( constShader ) { return mShader.get(); }
+
+    bool canCreateRasterAttributeTable( ) const override;
+
+    /**
+     * Creates a color ramp shader
+     * \param colorRamp vector color ramp. Ownership is transferred to the shader.
+     * \param colorRampType type of color ramp shader
+     * \param classificationMode classification mode
+     * \param classes number of classes
+     * \param clip clip out of range values
+     * \param extent extent used in classification (only used in quantile mode)
+     */
+    void createShader( QgsColorRamp *colorRamp SIP_TRANSFER = nullptr,
+                       Qgis::ShaderInterpolationMethod colorRampType = Qgis::ShaderInterpolationMethod::Linear,
+                       Qgis::ShaderClassificationMethod classificationMode = Qgis::ShaderClassificationMethod::Continuous,
+                       int classes = 0,
+                       bool clip = false,
+                       const QgsRectangle &extent = QgsRectangle() );
+
+    void writeXml( QDomDocument &doc, QDomElement &parentElem ) const override;
+    QList< QPair< QString, QColor > > legendSymbologyItems() const override;
+    QList<QgsLayerTreeModelLegendNode *> createLegendNodes( QgsLayerTreeLayer *nodeLayer ) SIP_FACTORY override;
+    QList<int> usesBands() const override;
+    Q_DECL_DEPRECATED void toSld( QDomDocument &doc, QDomElement &element, const QVariantMap &props = QVariantMap() ) const override SIP_DEPRECATED;
+    bool toSld( QDomDocument &doc, QDomElement &element, QgsSldExportContext &context ) const override;
+    bool accept( QgsStyleEntityVisitorInterface *visitor ) const override;
+
+    /**
+     * Returns the band used by the renderer
+     *
+     * \deprecated QGIS 3.38. Use inputBand() instead.
+     */
+    Q_DECL_DEPRECATED int band() const SIP_DEPRECATED { return mBand; }
+
+    /**
+     * Sets the band used by the renderer.
+     * \see band
+     *
+     * \deprecated QGIS 3.38. Use setInputBand() instead.
+     */
+    Q_DECL_DEPRECATED void setBand( int bandNo ) SIP_DEPRECATED;
+
+    int inputBand() const override;
+    bool setInputBand( int band ) override;
+
+    double classificationMin() const { return mClassificationMin; }
+    double classificationMax() const { return mClassificationMax; }
+    void setClassificationMin( double min );
+    void setClassificationMax( double max );
+
+    /**
+     * \brief Refreshes the renderer according to the \a min and \a max values associated with the \a extent.
+     * If \a min or \a max size is greater than 1, the last values are ignored.
+     * NaN values are ignored.
+     * If \a forceRefresh is TRUE, this will force the refresh even if needsRefresh() returns FALSE.
+     * \returns TRUE if the renderer has been refreshed
+     * \note not available in Python bindings
+     *
+     * \since QGIS 3.42
+     */
+    bool refresh( const QgsRectangle &extent, const QList<double> &min, const QList<double> &max, bool forceRefresh = false ) override SIP_SKIP;
+
+  private:
+#ifdef SIP_RUN
+    QgsSingleBandPseudoColorRenderer( const QgsSingleBandPseudoColorRenderer & );
+    const QgsSingleBandPseudoColorRenderer &operator=( const QgsSingleBandPseudoColorRenderer & );
+#endif
+
+    std::unique_ptr< QgsRasterShader > mShader;
+    int mBand;
+
+    // Minimum and maximum values used for automatic classification, these
+    // values are not used by renderer in rendering process
+    double mClassificationMin;
+    double mClassificationMax;
+
+};
+
+#endif // QGSSINGLEBANDPSEUDOCOLORRENDERER_H

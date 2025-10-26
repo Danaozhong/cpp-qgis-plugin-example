@@ -192,6 +192,15 @@ After activating the plugin, the plugin should show up in the plugin menu bar:
 
 ![](res/plugin-menu.png)
 
+### Linux (Ubuntu)
+
+Copy the built `libhelloworld.so` to `/usr/lib/qgis/plugins`. Afterwards, start QGIS. If the version of the plugin and QGIS are matching, QGIS should start without issues. In case it crashes, there is likely a mismatch with the libraries, so please confirm that you were using the right libraries (check the output of the CMake command).
+Enable the plugin in the plugin menu (Plugins -> Manage and Install Plugins... -> check "Hello World Plugin"). Close the plugin dialog.
+
+![](res/plugin-example-ubuntu.png)
+
+The plugin should now be visible in the toolbar.
+
 ## Multi-Version Support
 
 When you want to ship your plugin, you have to either pin your QGIS version, or provide builds for every version you want to support. I think the first is bad for user experience, so I went the long way and decided to support as many QGIS versions as possible. For each QGIS version and platform, you need to have compatible static libraries to link against.
