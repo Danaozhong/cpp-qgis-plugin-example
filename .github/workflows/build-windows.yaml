@@ -12,7 +12,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        qgis_version: [3_20_0, 3_28_3, 3_34_0, 3_34_1, 3_36_2, 3_36_3, 3_38_0, 3_38_3, 3_40_0, 3_40_2, 3_40_3]
+        build_config: [ 
+          {qgis_version: 3_20_0, release: rel},
+          {qgis_version: 3_28_3, release: rel},
+          {qgis_version: 3_34_0, release: rel},
+          {qgis_version: 3_34_1, release: rel},
+          {qgis_version: 3_36_2, release: rel},
+          {qgis_version: 3_36_3, release: rel},
+          {qgis_version: 3_38_0, release: rel},
+          {qgis_version: 3_38_3, release: rel},
+          {qgis_version: 3_40_0, release: rel},
+          {qgis_version: 3_40_2, release: rel},
+          {qgis_version: 3_40_3, release: rel},
+        ]
     env:
       EXT_OSGEO4W_ROOT: "C:/OSGeo4W"
       Qt5_DIR: "C:/OSGeo4W/apps/Qt5"
@@ -42,7 +54,7 @@ jobs:
 
     - name: Configure CMake
       run: |
-        $Env:OSGEO4W_ROOT="${{ github.workspace }}/dependencies/qgis/windows_x86_64/${{ matrix.qgis_version }}/"
+        $Env:OSGEO4W_ROOT="${{ github.workspace }}/dependencies/qgis/windows_x86_64/${{ matrix.build_config.release }}/${{ matrix.build_config.qgis_version }}/"
         cmake -B ${{ steps.strings.outputs.build-output-dir }} -S ${{ github.workspace }}
 
     - name: Build
@@ -50,5 +62,5 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: qgis-${{ matrix.qgis_version }}-plugin-windows
+        name: qgis-${{ matrix.build_config.release }}-${{ matrix.build_config.qgis_version }}-plugin-windows
         path: ${{ steps.strings.outputs.build-output-dir }}/**/helloworldplugin.dll
