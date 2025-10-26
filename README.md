@@ -25,7 +25,7 @@ However, in some cases there is still a use case for C++ plugins: if your plugin
 
 When I evaluated C++ plugins in QGIS, I realized that there is almost no documentation  on how to do it, and most sample code was >7 years old and failed to compile.
 
-That's why I provided this sample. It works with QGIS 3.2-3.4, comes with both CMake and QMake support. This repo provides instructions and sample CI jobs to build the plugin on all platforms. The code is the bare minimum to write a working C++ QGIS plugin.
+That's why I provided this sample. It works with QGIS 3.2-3.6, comes with both CMake and QMake support. This repo provides instructions and sample CI jobs to build the plugin on all platforms. The code is the bare minimum to write a working C++ QGIS plugin.
 
 I have tested the sample plugin on all three platforms (Windows, macOS, and Linux).
 
@@ -93,7 +93,9 @@ On Ubuntu, you can simply install the `qgis_dev` package:
 sudo apt install qgis-dev
 ```
 
-Make sure that the package fits to the QGIS version you intend to use.
+Make sure that the package fits to the QGIS version you intend to use. Alternatively, you can override the library and include header locations using the environment variables. See the [GitHub CI jobs](https://github.com/Danaozhong/cpp-simple-qgis-plugin/actions/workflows/build-linux.yaml) for an example.
+If no environment variables are provided, CMake falls back to system-installed QGIS locations.
+
 
 ### Cross-compiling for Windows using MinGW
 
@@ -167,6 +169,43 @@ On Windows, the `Makefile` only works with the MSVC build toolchain, so you need
 ```bash
 nmake
 ```
+
+
+## Building Using Bazel (Experimental)
+
+
+__Note: plugins built using Bazel are currently not tested!__
+
+This repository also provides a Bazel setup (Bzlmod) that mirrors the dependency discovery using environment variables, similar to the way the CMake `FindQGIS` works.
+
+Build the plugin with:
+
+```shell
+bazel build //src:helloworldplugin
+```
+
+The QGIS dependency discovery is provided using [bazel/qgis_deps.bzl](bazel/qgis_deps.bzl). It uses the same environment variables as the CMake variant and falls back to system-installed QGIS locations.
+
+- `QGIS_INCLUDE_DIR` and `QGIS_LIB_DIR`
+- `QGIS_PREFIX_PATH`
+- `QGIS_BUILD_PATH`
+- `QGIS_MAC_PATH` (macOS)
+- `OSGEO4W_ROOT` and `OSGEO4W_QGIS_SUBDIR` (Windows)
+- `LIB_DIR`, `INCLUDE`, `LIB`
+
+If you want to pick a specific QGIS installation, pass environment variables to Bazel repository rules with `--repo_env`.
+
+```shell
+bazel build //src:helloworldplugin \
+	--repo_env=QGIS_INCLUDE_DIR=/absolute/path/to/qgis/include/qgis \
+	--repo_env=QGIS_LIB_DIR=/absolute/path/to/qgis/lib
+```
+
+Qt is configured through [rules_qt6](https://github.com/Vertexwahn/rules_qt6) in [MODULE.bazel](MODULE.bazel) using the `rules_qt` module.
+
+__Caution__
+`rules_qt6` only supports a few Qt6 versions that don't match the version used by QGIS. Therefore, builds from Bazel will result in binaries that have incomatible versions of Qt, and will most likely not work.
+
 
 ## Testing 
 

@@ -35,6 +35,7 @@ IF(WIN32)
     FIND_PATH(QGIS_PLUGIN_DIR
         NAMES plugin_offlineediting.dll
         PATHS
+        # Used when OSGEO4W is installed.
         "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/plugins"
         "$ENV{PROGRAMFILES}/QGIS/plugins"
         NO_CMAKE_FIND_ROOT_PATH
@@ -44,6 +45,8 @@ IF(WIN32)
         PATHS
         "$ENV{INCLUDE}"
         "$ENV{LIB_DIR}/include/qgis"
+
+        # Used when OSGEO4W is installed.
         "$ENV{OSGEO4W_ROOT}/include"
         "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/include"
         "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/include/qgis"
@@ -86,13 +89,19 @@ ELSE(WIN32)
         FIND_PATH(QGIS_PLUGIN_DIR
             NAMES libplugin_offlineediting.so
             PATHS
+
+            # When the user explicitly provides the build path, e.g. local build.
             ${QGIS_BUILD_PATH}/PlugIns/qgis
             ${QGIS_MAC_PATH}/PlugIns/qgis
             ${QGIS_PREFIX_PATH}/lib/qgis/plugins
+
+            # when installing from qgis-dev
             /usr/lib64/qgis/plugins
             /usr/lib/qgis
             /usr/lib/qgis/plugins
             /usr/local/lib/qgis/plugins
+
+            # In case the libraries are downloaded and installed in a custom location, e.g. /opt/qgis, or when using OSGEO4W on OS X.
             "$ENV{LIB_DIR}/lib/qgis/plugins"
             "$ENV{LIB_DIR}/lib/qgis"
         )
