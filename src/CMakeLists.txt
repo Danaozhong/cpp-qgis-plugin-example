@@ -3,9 +3,17 @@ add_library(helloworldplugin MODULE
 )
 
 target_link_libraries(helloworldplugin
-  ${LIBS}
+  ${QGIS_CORE_LIBRARY}
+  ${QGIS_GUI_LIBRARY}
+  ${QGIS_ANALYSIS_LIBRARY}
+  Qt::Core
+  Qt::Gui
+  Qt::Xml
+  Qt::Widgets
 )
 
 target_include_directories(helloworldplugin PUBLIC
-  ${INCLUDES}
+  ${Boost_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${QGIS_INCLUDE_DIR}
 )
