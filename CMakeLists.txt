@@ -16,32 +16,27 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Enable Qt-specific extensions
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
+
+
 
 find_package(QGIS REQUIRED)
+
+# Try to find Qt5 or 6, whichever is available.
+find_package(Qt6 COMPONENTS Core Widgets Xml Gui )
+if (NOT Qt6_FOUND)
+  # Fall back to Qt5 if Qt6 is not found.
+  find_package(Qt5 5 REQUIRED COMPONENTS Core Widgets Xml Gui REQUIRED)
+
+  # Enable Qt5-specific extensions
+  set(CMAKE_AUTOMOC ON)
+  set(CMAKE_AUTORCC ON)
+
+else()
+  # Enable Qt6-specific extensions
+  qt_standard_project_setup()
+endif()
+
 find_package(Qt5 COMPONENTS Core Widgets Xml Gui REQUIRED)
-
-set(LIBS
-  ${QGIS_CORE_LIBRARY}
-  ${QGIS_GUI_LIBRARY}
-  ${QGIS_ANALYSIS_LIBRARY}
-  Qt5::Core
-  Qt5::Gui
-  Qt5::Xml
-  Qt5::Widgets
-)
-
-set(INCLUDES
-  ${Boost_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${QGIS_INCLUDE_DIR}
-)
-
-include_directories(
-  ${INCLUDES}
-)
 
 # The compiled library code is here
 add_subdirectory(src)

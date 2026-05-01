@@ -13,21 +13,23 @@ jobs:
       fail-fast: false
       matrix:
         build_config:
-          - { qgis_version: 3.20.0-1, release: rel }
-          - { qgis_version: 3.28.3-1, release: rel }
-          - { qgis_version: 3.34.0-1, release: rel }
-          - { qgis_version: 3.34.1-1, release: rel }
-          - { qgis_version: 3.36.2-1, release: rel }
-          - { qgis_version: 3.36.3-1, release: rel }
-          - { qgis_version: 3.38.0-1, release: rel }
-          - { qgis_version: 3.38.3-1, release: rel }
-          - { qgis_version: 3.40.0-1, release: rel }
-          - { qgis_version: 3.40.2-1, release: rel }
-          - { qgis_version: 3.40.3-1, release: rel }
-          - { qgis_version: 3.44.9-2, release: ltr }
+          - { qgis_version: 3.20.0-1, release: rel, qt_version: 5 }
+          - { qgis_version: 3.28.3-1, release: rel, qt_version: 5 }
+          - { qgis_version: 3.34.0-1, release: rel, qt_version: 5 }
+          - { qgis_version: 3.34.1-1, release: rel, qt_version: 5 }
+          - { qgis_version: 3.36.2-1, release: rel, qt_version: 5 }
+          - { qgis_version: 3.36.3-1, release: rel, qt_version: 5 }
+          - { qgis_version: 3.38.0-1, release: rel, qt_version: 5 }
+          - { qgis_version: 3.38.3-1, release: rel, qt_version: 5 }
+          - { qgis_version: 3.40.0-1, release: rel, qt_version: 5 }
+          - { qgis_version: 3.40.2-1, release: rel, qt_version: 5 }
+          - { qgis_version: 3.40.3-1, release: rel, qt_version: 5 }
+          - { qgis_version: 3.44.9-2, release: ltr, qt_version: 5 }
+          - { qgis_version: 4.0.1-2, release: rel, qt_version: 6 }
     env:
       EXT_OSGEO4W_ROOT: "C:/OSGeo4W"
       Qt5_DIR: "C:/OSGeo4W/apps/Qt5"
+      Qt6_DIR: "C:/OSGeo4W/apps/Qt6"
 
     steps:
     - uses: actions/checkout@v4
@@ -63,6 +65,12 @@ jobs:
       run: |
         $exe = 'osgeo4w-setup.exe'
         $url = 'https://download.osgeo.org/osgeo4w/v2/' + $exe
+        $qtVersion = '${{ matrix.build_config.qt_version }}'
+        $qtPackages = switch ($qtVersion) {
+          '6' { 'qt6-devel,qt6-libs,qt6-tools' }
+          default { 'qt5-devel,qt5-libs,qt5-tools,qt5-libs-symbols' }
+        }
+
         Invoke-WebRequest -Uri $url -OutFile $exe
         Start-Process ('.\' + $exe) -ArgumentList @(
           '--advanced',
@@ -71,7 +79,7 @@ jobs:
           '--only-site',
           '-R', $env:EXT_OSGEO4W_ROOT,
           '-s', 'https://download.osgeo.org/osgeo4w/v2/',
-          '-P', 'qt5-devel,qt5-libs,qt5-tools,qt5-libs-symbols'
+          '-P', $qtPackages
         ) -Wait -NoNewWindow
 
     - name: Set reusable strings
@@ -85,13 +93,14 @@ jobs:
       run: |
         Add-Content $env:GITHUB_PATH "$env:EXT_OSGEO4W_ROOT/bin"
         Add-Content $env:GITHUB_PATH "$env:Qt5_DIR/bin"
+        Add-Content $env:GITHUB_PATH "$env:Qt6_DIR/bin"
 
     - name: Configure CMake
       shell: pwsh
       run: |
         $Env:OSGEO4W_ROOT = $env:EXT_OSGEO4W_ROOT
         $Env:OSGEO4W_QGIS_SUBDIR = '${{ steps.qgis-package.outputs.qgis-subdir }}'
-        cmake -B ${{ steps.strings.outputs.build-output-dir }} -S ${{ github.workspace }} -DQt5_DIR="$env:Qt5_DIR"
+        cmake -B ${{ steps.strings.outputs.build-output-dir }} -S ${{ github.workspace }} -DQt5_DIR="$env:Qt5_DIR" -DQt6_DIR="$env:Qt6_DIR"
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
