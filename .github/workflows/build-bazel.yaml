@@ -1,0 +1,39 @@
+name: Build the QGIS plugin (Bazel)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-bazel-linux:
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        build_config:
+          - qgis_version: 3_44_4
+            release: ltr
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bazelisk
+        uses: bazelbuild/setup-bazelisk@v3
+
+      - name: Build plugin via Bazel
+        env:
+          QGIS_INCLUDE_DIR: ${{ github.workspace }}/dependencies/qgis/linux_x86_64/${{ matrix.build_config.release }}/${{ matrix.build_config.qgis_version }}/include/qgis
+          QGIS_LIB_DIR: ${{ github.workspace }}/dependencies/qgis/linux_x86_64/${{ matrix.build_config.release }}/${{ matrix.build_config.qgis_version }}/lib
+        run: |
+          bazel build //src:helloworldplugin \
+            --repo_env=QGIS_INCLUDE_DIR=${QGIS_INCLUDE_DIR} \
+            --repo_env=QGIS_LIB_DIR=${QGIS_LIB_DIR}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qgis-${{ matrix.build_config.release }}-${{ matrix.build_config.qgis_version }}-plugin-linux-bazel
+          path: bazel-bin/src/libhelloworldplugin.so
