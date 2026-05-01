@@ -13,18 +13,18 @@ jobs:
       fail-fast: false
       matrix:
         build_config:
-          - { qgis_version: 3.20.0-1, release: rel }
-          - { qgis_version: 3.28.3-1, release: rel }
-          - { qgis_version: 3.34.0-1, release: rel }
-          - { qgis_version: 3.34.1-1, release: rel }
-          - { qgis_version: 3.36.2-1, release: rel }
-          - { qgis_version: 3.36.3-1, release: rel }
-          - { qgis_version: 3.38.0-1, release: rel }
-          - { qgis_version: 3.38.3-1, release: rel }
-          - { qgis_version: 3.40.0-1, release: rel }
-          - { qgis_version: 3.40.2-1, release: rel }
-          - { qgis_version: 3.40.3-1, release: rel }
-          - { qgis_version: 3.44.9-2, release: ltr }
+          - { qgis_version: 3.20.0-1, release: rel, sha256: adf9e4cfa0ebcfef06345b667a099fe62df6d61bfba7ea26bad523853e99ce5f }
+          - { qgis_version: 3.28.3-1, release: rel, sha256: b98ec162132470fcd1470b7ff0e3b91ce927bce200258286ef9ede4f6c9cfbb9 }
+          - { qgis_version: 3.34.0-1, release: rel, sha256: 90dfe25d5e32d2898c5ab1467aa414eb3ef41e9ce99b44857cb4c703c5cb8dd0 }
+          - { qgis_version: 3.34.1-1, release: rel, sha256: 63976f278e021b71f673b1286749f4c91ce6a08bf82f441c2baa28376c621838 }
+          - { qgis_version: 3.36.2-1, release: rel, sha256: 5126df6381dba0726761f5b2869b170e0e8f8938f80baf2b04b631511442974f }
+          - { qgis_version: 3.36.3-1, release: rel, sha256: 9489591f1feb7edc763641e1a141703675c478a0aa1c5814171a93171d71122b }
+          - { qgis_version: 3.38.0-1, release: rel, sha256: 3a6b0478faa69e2d53b6524a63b34a66fc956d6fb0a935cfa227eae2fbebabc1 }
+          - { qgis_version: 3.38.3-1, release: rel, sha256: cbfb5c287e91401d8d4215813666f19889de1e80208b2427aeed85cbd7918145 }
+          - { qgis_version: 3.40.0-1, release: rel, sha256: 91f5bc0d534dc90875da782999f3b46928038c5c217e7020624ec0ac06b34764 }
+          - { qgis_version: 3.40.2-1, release: rel, sha256: 1e2c50cb6727c47b94f02209ce2223c2b36bf900469204eb1d61ef0f3ba157b3 }
+          - { qgis_version: 3.40.3-1, release: rel, sha256: 7f3e9f95ea3fae8b245ab7c94f8ed39f6d4ecaa7bb855399a92063db66fc3daa }
+          - { qgis_version: 3.44.9-2, release: ltr, sha256: c12d54380dcda6f3e3c3f2984b5945d49216038878b683bc05b86b89647bea40 }
     env:
       EXT_OSGEO4W_ROOT: "C:/OSGeo4W"
       Qt5_DIR: "C:/OSGeo4W/apps/Qt5"
@@ -53,6 +53,13 @@ jobs:
         $archiveName = "$($packageInfo.filePrefix)-$version.tar.bz2"
         $packageUrl = "$rootUrl/$($packageInfo.subdir)/$($packageInfo.filePrefix)/$archiveName"
         Invoke-WebRequest -Uri $packageUrl -OutFile $archiveName
+
+        $expectedSha256 = '${{ matrix.build_config.sha256 }}'.ToLowerInvariant()
+        $actualSha256 = (Get-FileHash -Path $archiveName -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($actualSha256 -ne $expectedSha256) {
+          throw "SHA256 mismatch for $archiveName. expected=$expectedSha256 actual=$actualSha256"
+        }
+
         tar -xf $archiveName -C $env:EXT_OSGEO4W_ROOT
 
         "package-url=$packageUrl" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
