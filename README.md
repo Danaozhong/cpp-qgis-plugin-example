@@ -52,7 +52,7 @@ If your plugin is using Qt, also install the following dependencies:
 - `qt5-tools`
 - `qt5-libs-symbols`
 
-You can look at the [Windows GitHub Action](https://github.com/Danaozhong/cpp-simple-qgis-plugin/blob/main/.github/workflows/build-windows.yaml) in this repository to see how to install the dependencies automatically.
+If you need these packages for different QGIS versions, you can also download them directly from the QGIS server. You can look at the [Windows GitHub Action](https://github.com/Danaozhong/cpp-simple-qgis-plugin/blob/main/.github/workflows/build-windows.yaml) in this repository to see how to install the dependencies automatically: this CI job uses a build matrix for different QGIS version (LTR and regular releases), and downloads the dependencies automatically.
 
 These packages include the QGIS API headers (for example `qgsconfig.h`), and the static libraries (`qgis_core.lib`, `lqgis_gui.lib`) required to compile a plugin. If you want to use the plugin in a pre-installed QGIS, you can be sure that the libraries and headers fit to the installed QGIS version.
 If you are using `OSGeo4W`, there is no need to build QGIS yourself.

@@ -1,1 +1,0 @@
-https://download.osgeo.org/osgeo4w/v2/snapshots/1698417287/x86_64/release/qgis/qgis/qgis-devel/
